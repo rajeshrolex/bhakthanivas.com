@@ -92,7 +92,7 @@ if ($method === 'GET' && $rawId === null) {
 
     $bookings = array_map('enrichBooking', $rows);
 
-    jsonResponse(['success' => true, 'bookings' => $bookings, 'count' => count($bookings)]);
+    jsonResponse($bookings);
 }
 
 // =========================================================== GET /bookings/:id  or /bookings/:id/invoice
@@ -113,7 +113,7 @@ if ($method === 'GET' && $rawId !== null) {
 
         // Return JSON invoice data (frontend generates PDF via jsPDF/invoiceService.js)
         $booking = enrichBooking($booking);
-        jsonResponse(['success' => true, 'booking' => $booking]);
+        jsonResponse($booking);
     }
 
     // ---- Single booking ----
@@ -128,7 +128,7 @@ if ($method === 'GET' && $rawId !== null) {
         jsonError('Booking not found', 404);
     }
 
-    jsonResponse(['success' => true, 'booking' => enrichBooking($booking)]);
+    jsonResponse(enrichBooking($booking));
 }
 
 // =========================================================== POST /bookings
@@ -261,7 +261,7 @@ if ($method === 'POST' && $rawId === null) {
         $emailService->sendBookingEmails($emailDetails);
     }
 
-    jsonResponse(['success' => true, 'booking' => enrichBooking($booking), 'bookingId' => $bookingId], 201);
+    jsonResponse(enrichBooking($booking), 201);
 }
 
 // ========================================================= PUT /bookings/:id/status
@@ -285,7 +285,7 @@ if ($method === 'PUT' && $rawId !== null && $subact === 'status') {
     $db->query("UPDATE bookings SET status = ? WHERE id = ?", [$status, $booking['id']]);
 
     $updated = $db->fetchOne("SELECT * FROM bookings WHERE id = ?", [$booking['id']]);
-    jsonResponse(['success' => true, 'booking' => enrichBooking($updated)]);
+    jsonResponse(enrichBooking($updated));
 }
 
 // ======================================================= PUT /bookings/:id/payment

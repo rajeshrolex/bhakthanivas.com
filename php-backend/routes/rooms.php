@@ -34,7 +34,7 @@ if ($method === 'GET' && $id === null) {
     }
     unset($room);
 
-    jsonResponse(['success' => true, 'rooms' => $rooms]);
+    jsonResponse($rooms);
 }
 
 // ============================================================= GET /rooms/:id
@@ -46,7 +46,7 @@ if ($method === 'GET' && $id !== null) {
     }
     $room['amenities'] = json_decode($room['amenities'] ?? '[]', true) ?? [];
 
-    jsonResponse(['success' => true, 'room' => $room]);
+    jsonResponse($room);
 }
 
 // ============================================================ POST /rooms
@@ -89,7 +89,7 @@ if ($method === 'POST' && $id === null) {
     $room  = $db->fetchOne("SELECT * FROM rooms WHERE id = ?", [$newId]);
     $room['amenities'] = json_decode($room['amenities'] ?? '[]', true) ?? [];
 
-    jsonResponse(['success' => true, 'room' => $room], 201);
+    jsonResponse($room, 201);
 }
 
 // =========================================================== PUT /rooms/:id
@@ -134,7 +134,7 @@ if ($method === 'PUT' && $id !== null) {
     $updated = $db->fetchOne("SELECT * FROM rooms WHERE id = ?", [$id]);
     $updated['amenities'] = json_decode($updated['amenities'] ?? '[]', true) ?? [];
 
-    jsonResponse(['success' => true, 'room' => $updated]);
+    jsonResponse($updated);
 }
 
 // ======================================================== DELETE /rooms/:id

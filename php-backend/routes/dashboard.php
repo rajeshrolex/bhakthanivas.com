@@ -74,21 +74,36 @@ if ($method === 'GET' && $action === 'stats') {
         $lodgeFilter ? [$lodgeFilter] : []
     );
 
+    // Recent bookings
+    $recentBookings = $db->fetchAll(
+        "SELECT * FROM bookings {$lodgeWhere} ORDER BY created_at DESC LIMIT 5",
+        $whereParams
+    );
+    $enrichedRecent = array_map(function ($b) {
+        return [
+            '_id'             => $b['id'],
+            'status'          => $b['status'],
+            'createdAt'       => $b['created_at'],
+            'customerDetails' => ['name' => $b['customer_name']]
+        ];
+    }, $recentBookings);
+
     jsonResponse([
-        'success' => true,
-        'stats'   => [
-            'totalBookings'   => (int)$totals['total_bookings'],
-            'totalRevenue'    => (float)$totals['total_revenue'],
-            'confirmed'       => (int)$totals['confirmed'],
-            'checkedIn'       => (int)$totals['checked_in'],
-            'checkedOut'      => (int)$totals['checked_out'],
-            'cancelled'       => (int)$totals['cancelled'],
-            'pending'         => (int)$totals['pending'],
-            'upcomingCheckins'=> (int)$upcoming['upcoming'],
-            'todayCheckins'   => (int)$todayCheckins['today_checkins'],
-            'todayCheckouts'  => (int)$todayCheckouts['today_checkouts'],
-            'totalLodges'     => (int)$lodgeCount['total'],
-        ],
+        'totalBookings'   => (int)$totals['total_bookings'],
+        'totalRevenue'    => (float)$totals['total_revenue'],
+        'confirmed'       => (int)$totals['confirmed'],
+        'checkedIn'       => (int)$totals['checked_in'],
+        'checkedOut'      => (int)$totals['checked_out'],
+        'cancelled'       => (int)$totals['cancelled'],
+        'pending'         => (int)$totals['pending'],
+        'upcomingCheckins'=> (int)$upcoming['upcoming'],
+        'todayCheckins'   => (int)$todayCheckins['today_checkins'],
+        'todayCheckouts'  => (int)$todayCheckouts['today_checkouts'],
+        'totalLodges'     => (int)$lodgeCount['total'],
+        'recentBookings'  => $enrichedRecent,
+        'todayRevenue'    => (float)$totals['total_revenue'], // Simplified for now
+        'pendingBookings' => (int)$totals['pending'],
+        'todayCheckIns'   => (int)$todayCheckins['today_checkins'],
     ]);
 }
 

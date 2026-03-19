@@ -32,7 +32,7 @@ if ($method === 'GET') {
         $params
     );
 
-    jsonResponse(['success' => true, 'reviews' => $reviews]);
+    jsonResponse($reviews);
 }
 
 // ============================================================== POST

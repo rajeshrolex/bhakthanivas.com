@@ -36,7 +36,7 @@ if ($method === 'GET' && $id === null) {
     }
     unset($lodge, $room);
 
-    jsonResponse(['success' => true, 'lodges' => $lodges]);
+    jsonResponse($lodges);
 }
 
 // ============================================================= GET /lodges/:id
@@ -59,7 +59,7 @@ if ($method === 'GET' && $id !== null) {
     }
     unset($room);
 
-    jsonResponse(['success' => true, 'lodge' => $lodge]);
+    jsonResponse($lodge);
 }
 
 // ============================================================ POST /lodges

@@ -43,7 +43,7 @@ if ($method === 'GET') {
         $params
     );
 
-    jsonResponse(['success' => true, 'prices' => $prices]);
+    jsonResponse($prices);
 }
 
 // ============================================================== POST (upsert)
@@ -125,13 +125,14 @@ if ($method === 'POST' && ($seg[2] ?? '') === 'bulk') {
         } else {
             $db->query(
                 "INSERT INTO daily_prices (lodge_id, date, room_type, price, is_blocked) VALUES (?,?,?,?,?)",
-                [(int)$entry['lodgeId'], $entry['date'], $entry['roomType'], $price, $isBlocked]
+                [$lodgeId, $date, $roomType, $price, $isBlocked]
             );
             $inserted++;
+            $dates[] = $db->fetchOne("SELECT * FROM daily_prices WHERE id = ?", [$db->lastInsertId()]);
         }
     }
 
-    jsonResponse(['success' => true, 'inserted' => $inserted, 'updated' => $updated]);
+    jsonResponse($dates);
 }
 
 // ============================================================== DELETE

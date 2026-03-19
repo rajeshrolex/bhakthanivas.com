@@ -6,6 +6,9 @@ Options +FollowSymLinks
 
 RewriteEngine On
 
+# Ensure Authorization header is passed to PHP
+SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+
 # Handle CORS preflight requests
 RewriteCond %{REQUEST_METHOD} OPTIONS
 RewriteRule ^(.*)$ index.php [QSA,L]

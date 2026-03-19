@@ -39,7 +39,7 @@ if ($method === 'GET') {
         $params
     );
 
-    jsonResponse(['success' => true, 'blockedDates' => $dates]);
+    jsonResponse($dates);
 }
 
 // ============================================================== POST
@@ -107,7 +107,7 @@ if ($method === 'POST' && ($seg[2] ?? '') === 'bulk') {
         $added++;
     }
 
-    jsonResponse(['success' => true, 'added' => $added, 'skipped' => $skipped]);
+    jsonResponse($reviews);
 }
 
 // ============================================================== DELETE
