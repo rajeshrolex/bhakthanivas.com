@@ -15,18 +15,22 @@ $db     = Database::getInstance();
 $method = $_SERVER['REQUEST_METHOD'];
 $seg    = getPathSegments();
 // seg: ['api','lodges'] or ['api','lodges','123']
-$id     = isset($seg[2]) && is_numeric($seg[2]) ? (int)$seg[2] : null;
+$idOrSlug = $seg[2] ?? null;
+$id       = ($idOrSlug !== null && is_numeric($idOrSlug)) ? (int)$idOrSlug : null;
 
 // ================================================================ GET /lodges
-if ($method === 'GET' && $id === null) {
+if ($method === 'GET' && $idOrSlug === null) {
     $lodges = $db->fetchAll("SELECT * FROM lodges ORDER BY name ASC");
 
     foreach ($lodges as &$lodge) {
-        $lodge['_id'] = $lodge['id'];
-        $lodge['priceStarting'] = $lodge['price_starting'];
-        $lodge['amenities'] = json_decode($lodge['amenities'] ?? '[]', true) ?? [];
-        $lodge['images']    = json_decode($lodge['images']    ?? '[]', true) ?? [];
-        $lodge['isBlocked'] = (bool)($lodge['is_blocked'] ?? false);
+        $lodge['_id']          = $lodge['id'];
+        $lodge['priceStarting']= (float)$lodge['price_starting'];
+        $lodge['distanceType'] = $lodge['distance_type'];
+        $lodge['reviewCount']  = (int)$lodge['review_count'];
+        $lodge['rating']       = (float)($lodge['rating'] ?? 0);
+        $lodge['amenities']    = json_decode($lodge['amenities'] ?? '[]', true) ?? [];
+        $lodge['images']       = json_decode($lodge['images']    ?? '[]', true) ?? [];
+        $lodge['isBlocked']    = (bool)($lodge['is_blocked'] ?? false);
 
         // Fetch blocked dates
         $dates = $db->fetchAll("SELECT date FROM blocked_dates WHERE lodge_id = ?", [$lodge['id']]);
@@ -62,11 +66,14 @@ if ($method === 'GET' && $idOrSlug !== null && !isset($seg[3])) {
         jsonError('Lodge not found', 404);
     }
 
-    $lodge['_id'] = $lodge['id'];
-    $lodge['priceStarting'] = $lodge['price_starting'];
-    $lodge['amenities'] = json_decode($lodge['amenities'] ?? '[]', true) ?? [];
-    $lodge['images']    = json_decode($lodge['images']    ?? '[]', true) ?? [];
-    $lodge['isBlocked'] = (bool)($lodge['is_blocked'] ?? false);
+    $lodge['_id']          = $lodge['id'];
+    $lodge['priceStarting']= (float)$lodge['price_starting'];
+    $lodge['distanceType'] = $lodge['distance_type'];
+    $lodge['reviewCount']  = (int)$lodge['review_count'];
+    $lodge['rating']       = (float)($lodge['rating'] ?? 0);
+    $lodge['amenities']    = json_decode($lodge['amenities'] ?? '[]', true) ?? [];
+    $lodge['images']       = json_decode($lodge['images']    ?? '[]', true) ?? [];
+    $lodge['isBlocked']    = (bool)($lodge['is_blocked'] ?? false);
 
     // Fetch blocked dates
     $dates = $db->fetchAll("SELECT date FROM blocked_dates WHERE lodge_id = ?", [$lodge['id']]);
