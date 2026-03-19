@@ -64,7 +64,7 @@ const LodgeList = () => {
 
     // Apply filters and sorting locally
     const filteredLodges = useMemo(() => {
-        let result = lodges.filter(lodge => !lodge.isBlocked);
+        let result = (Array.isArray(lodges) ? lodges : []).filter(lodge => !lodge.isBlocked);
 
         // Filter out lodges that are blocked on any of the selected dates
         const checkInParam = searchParams.get('checkIn') || bookingData?.checkIn;
