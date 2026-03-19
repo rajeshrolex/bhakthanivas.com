@@ -42,7 +42,7 @@ const Home = () => {
 
     // Filter lodges
     const todayStr = format(today, 'yyyy-MM-dd');
-    const activeLodges = lodges.filter(l =>
+    const activeLodges = (Array.isArray(lodges) ? lodges : []).filter(l =>
         !l.isBlocked && !(l.blockedDates && l.blockedDates.includes(todayStr))
     );
     const availableLodges = activeLodges.filter(l => l.availability === 'available' || l.availability === 'limited');

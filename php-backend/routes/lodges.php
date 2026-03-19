@@ -11,6 +11,10 @@
 
 declare(strict_types=1);
 
+$db     = Database::getInstance();
+$method = $_SERVER['REQUEST_METHOD'];
+$seg    = getPathSegments();
+
 $idOrSlug = $seg[2] ?? null;
 $id       = ($idOrSlug !== null && is_numeric($idOrSlug)) ? (int)$idOrSlug : null;
 

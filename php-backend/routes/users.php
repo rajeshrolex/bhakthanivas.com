@@ -20,6 +20,7 @@ $id     = isset($seg[2]) && is_numeric($seg[2]) ? (int)$seg[2] : null;
 if ($method === 'GET' && $id === null) {
     requireSuperAdmin();
 
+    $users = $db->fetchAll("SELECT id, name, email, phone, role, lodge_id, created_at FROM users ORDER BY name ASC");
     foreach ($users as &$u) {
         $u['_id']     = $u['id'];
         $u['lodgeId'] = $u['lodge_id'];
