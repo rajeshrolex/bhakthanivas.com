@@ -41,7 +41,7 @@ class Database
             header('Content-Type: application/json');
             echo json_encode([
                 'error'   => 'Database connection failed',
-                'message' => APP_ENV === 'development' ? $e->getMessage() : 'Internal server error',
+                'message' => $e->getMessage(), // Temporarily show full error
             ]);
             exit;
         }

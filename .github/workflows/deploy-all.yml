@@ -74,10 +74,10 @@ jobs:
             --no-interaction \
             --prefer-dist
 
-      - name: 🔧 Write Production .env (Hardcoded for success)
+      - name: 🔧 Create production .env (Hardcoded)
         working-directory: php-backend
         run: |
-          cat > .env << ENVEOF
+          cat > .env << 'ENVEOF'
           DB_HOST=localhost
           DB_PORT=3306
           DB_NAME=u882069120_bhakthanivas
