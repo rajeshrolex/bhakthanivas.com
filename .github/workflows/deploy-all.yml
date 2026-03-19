@@ -86,7 +86,7 @@ jobs:
           DB_PASS=Sandanithin@2026
           APP_ENV=production
           BASE_URL=https://deeppink-aardvark-943779.hostingersite.com
-          JWT_SECRET=mantralayam_jwt_secret_2026
+          JWT_SECRET=mantralayam_super_secure_jwt_secret_key_2026_bhaktanivas_production_long_secret
           JWT_EXPIRY=86400
           RAZORPAY_KEY_ID=rzp_test_SDLqt0o7HljyuM
           RAZORPAY_KEY_SECRET=bnLv8KJimr65X4TRIEvSOuYg
