@@ -81,10 +81,14 @@ if ($method === 'GET' && $action === 'stats') {
     );
     $enrichedRecent = array_map(function ($b) {
         return [
+            'id'              => $b['id'],
             '_id'             => $b['id'],
+            'bookingId'       => $b['booking_id'],
             'status'          => $b['status'],
             'createdAt'       => $b['created_at'],
-            'customerDetails' => ['name' => $b['customer_name']]
+            'customerDetails' => [
+                'name' => $b['customer_name']
+            ]
         ];
     }, $recentBookings);
 
@@ -129,9 +133,11 @@ if ($method === 'GET' && $action === 'recent-bookings') {
 
     // Enrich bookings
     $result = array_map(function ($b) {
+        $b['_id']             = $b['id'];
+        $b['bookingId']       = $b['booking_id'];
+        $b['totalAmount']     = (float)$b['total_amount'];
         $b['room']            = ['type' => $b['room_type'], 'name' => $b['room_name'], 'price' => (float)$b['room_price']];
         $b['customerDetails'] = ['name' => $b['customer_name'], 'mobile' => $b['customer_mobile'], 'email' => $b['customer_email']];
-        unset($b['room_type'],$b['room_name'],$b['room_price'],$b['customer_name'],$b['customer_mobile'],$b['customer_email'],$b['id_type'],$b['id_number']);
         return $b;
     }, $bookings);
 
