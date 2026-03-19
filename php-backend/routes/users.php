@@ -20,9 +20,11 @@ $id     = isset($seg[2]) && is_numeric($seg[2]) ? (int)$seg[2] : null;
 if ($method === 'GET' && $id === null) {
     requireSuperAdmin();
 
-    $users = $db->fetchAll(
-        "SELECT id, name, email, phone, role, lodge_id, created_at FROM users ORDER BY created_at DESC"
-    );
+    foreach ($users as &$u) {
+        $u['_id']     = $u['id'];
+        $u['lodgeId'] = $u['lodge_id'];
+    }
+    unset($u);
 
     jsonResponse(['success' => true, 'users' => $users]);
 }
@@ -42,6 +44,9 @@ if ($method === 'GET' && $id !== null) {
     );
 
     if (!$user) jsonError('User not found', 404);
+
+    $user['_id']     = $user['id'];
+    $user['lodgeId'] = $user['lodge_id'];
 
     jsonResponse(['success' => true, 'user' => $user]);
 }
@@ -83,6 +88,9 @@ if ($method === 'POST' && $id === null) {
         "SELECT id, name, email, phone, role, lodge_id, created_at FROM users WHERE id = ?",
         [$db->lastInsertId()]
     );
+
+    $user['_id']     = $user['id'];
+    $user['lodgeId'] = $user['lodge_id'];
 
     jsonResponse(['success' => true, 'user' => $user], 201);
 }
@@ -127,6 +135,9 @@ if ($method === 'PUT' && $id !== null) {
         "SELECT id, name, email, phone, role, lodge_id, created_at FROM users WHERE id = ?",
         [$id]
     );
+
+    $user['_id']     = $user['id'];
+    $user['lodgeId'] = $user['lodge_id'];
 
     jsonResponse(['success' => true, 'user' => $user]);
 }

@@ -31,6 +31,8 @@ if ($method === 'GET' && $action === 'me') {
         jsonError('User not found', 404);
     }
 
+    $row['_id']     = $row['id'];
+    $row['lodgeId'] = $row['lodge_id'];
     jsonResponse(['success' => true, 'user' => $row]);
 }
 
@@ -68,6 +70,9 @@ if ($method === 'POST' && $action === 'login') {
     $token = JWT::encode($payload, JWT_SECRET, 'HS256');
 
     unset($user['password']);
+
+    $user['_id']     = $user['id'];
+    $user['lodgeId'] = $user['lodge_id'];
 
     jsonResponse([
         'success' => true,
@@ -115,6 +120,8 @@ if ($method === 'POST' && $action === 'register') {
         [$newId]
     );
 
+    $user['_id']     = $user['id'];
+    $user['lodgeId'] = $user['lodge_id'];
     jsonResponse(['success' => true, 'user' => $user], 201);
 }
 
