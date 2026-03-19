@@ -122,6 +122,15 @@ if ($method === 'POST' && ($seg[2] ?? '') === 'bulk') {
                 [$price, $isBlocked, $existing['id']]
             );
             $updated++;
+        } else {
+            $db->query(
+                "INSERT INTO daily_prices (lodge_id, date, room_type, price, is_blocked) VALUES (?,?,?,?,?)",
+                [(int)$entry['lodgeId'], $entry['date'], $entry['roomType'], $price, $isBlocked]
+            );
+            $inserted++;
+        }
+    }
+
     jsonResponse(['success' => true, 'inserted' => $inserted, 'updated' => $updated]);
 }
 
