@@ -125,32 +125,28 @@ export const BookingProvider = ({ children }) => {
             }
 
             const bookingPayload = {
-                lodgeId: bookingData.selectedLodge?._id || bookingData.selectedLodge?.id,
-                lodgeName: bookingData.selectedLodge?.name,
-                room: {
-                    type: bookingData.selectedRoom?.type,
-                    name: bookingData.selectedRoom?.name,
-                    price: bookingData.selectedRoom?.price
-                },
-                checkIn: bookingData.checkIn || new Date(),
-                checkOut: bookingData.checkOut || new Date(Date.now() + 86400000),
-                checkInTime: bookingData.checkInTime || '12:00',
-                guests: bookingData.guests,
-                rooms: bookingData.rooms,
-                customerDetails: bookingData.customerDetails,
-                paymentMethod: normalizedPaymentMethod, // Use normalized value
-                totalAmount: calculateTotalPrice() || bookingData.selectedRoom?.price * totalNights,
-                paymentDetails: paymentDetails,
-                // Pass amountPaid and balanceAmount from payment details for partial payments
-                amountPaid: paymentDetails?.amountPaid,
-                balanceAmount: paymentDetails?.balanceAmount,
-                // Explicitly set payment status at top level for clarity
-                paymentStatus: paymentStatus
+                lodgeId:       bookingData.selectedLodge?._id || bookingData.selectedLodge?.id,
+                // BUG FIX: backend reads roomId (not room.id nested object)
+                roomId:        bookingData.selectedRoom?._id || bookingData.selectedRoom?.id,
+                checkIn:       bookingData.checkIn  || new Date().toISOString().split('T')[0],
+                checkOut:      bookingData.checkOut || new Date(Date.now() + 86400000).toISOString().split('T')[0],
+                checkInTime:   bookingData.checkInTime || '12:00',
+                guests:        bookingData.guests,
+                rooms:         bookingData.rooms,
+                // BUG FIX: backend bookings.php reads flat fields (customerName, customerMobile,
+                // customerEmail, idType, idNumber) not a nested customerDetails object.
+                customerName:  bookingData.customerDetails.name,
+                customerMobile:bookingData.customerDetails.mobile,
+                customerEmail: bookingData.customerDetails.email  || '',
+                idType:        bookingData.customerDetails.idType  || '',
+                idNumber:      bookingData.customerDetails.idNumber || '',
+                paymentMethod: normalizedPaymentMethod,
+                totalAmount:   calculateTotalPrice() || (bookingData.selectedRoom?.price * totalNights),
+                amountPaid:    paymentDetails?.amountPaid   ?? 0,
+                balanceAmount: paymentDetails?.balanceAmount ?? (calculateTotalPrice() || 0),
+                paymentStatus: paymentStatus,
+                paymentId:     paymentDetails?.razorpay_payment_id ?? null,
             };
-
-            console.log('Submitting booking - Frontend method:', bookingData.paymentMethod, '→ Backend method:', normalizedPaymentMethod);
-            console.log('Payment Status:', bookingPayload.paymentStatus);
-            console.log('Payment Details:', paymentDetails);
 
             const result = await bookingAPI.create(bookingPayload);
 

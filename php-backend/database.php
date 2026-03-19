@@ -39,10 +39,12 @@ class Database
         } catch (PDOException $e) {
             http_response_code(500);
             header('Content-Type: application/json');
-            echo json_encode([
-                'error'   => 'Database connection failed',
-                'message' => $e->getMessage(), // Temporarily show full error
-            ]);
+            // BUG FIX: Never expose raw DB error messages to clients in production.
+            // The full message (with credentials/host info) was being sent publicly.
+            $safeMsg = (defined('APP_ENV') && APP_ENV === 'development')
+                ? $e->getMessage()
+                : 'Database connection failed. Please try again later.';
+            echo json_encode(['success' => false, 'error' => $safeMsg]);
             exit;
         }
     }

@@ -1,0 +1,17 @@
+# Protect the php-backend/uploads/ directory
+# Files can be read but not executed as PHP scripts
+
+Options -Indexes
+Options -ExecCGI
+
+# Block direct PHP execution in uploads
+<FilesMatch "\.php$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Allow image file access
+<FilesMatch "\.(jpg|jpeg|png|webp|gif)$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>

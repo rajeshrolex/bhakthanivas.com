@@ -72,11 +72,26 @@ function getBody(): array
 }
 
 // --- Helper: Get path segments from URI ---
+// Parses the request URI and returns path segments starting from 'api'.
+// Works regardless of deployment subdirectory (localhost, php-backend/, or Hostinger root).
 function getPathSegments(): array
 {
-    $uri    = $_SERVER['REQUEST_URI'] ?? '/';
-    $path   = parse_url($uri, PHP_URL_PATH);
-    $path   = preg_replace('#^/php-backend(/index\.php)?#', '', $path ?? '');
-    $path   = trim($path, '/');
-    return empty($path) ? [] : explode('/', $path);
+    $uri  = $_SERVER['REQUEST_URI'] ?? '/';
+    $path = parse_url($uri, PHP_URL_PATH) ?? '/';
+
+    // Normalize: remove any script name prefix (e.g. /index.php)
+    $path = preg_replace('#/index\.php#', '', $path);
+    $path = trim($path, '/');
+
+    $parts = empty($path) ? [] : explode('/', $path);
+
+    // Find the 'api' segment and return from there, so the router always
+    // sees ['api', 'resource', ...] regardless of deployment subdirectory.
+    $apiIndex = array_search('api', $parts, true);
+    if ($apiIndex !== false) {
+        return array_values(array_slice($parts, $apiIndex));
+    }
+
+    // Fallback: return raw parts (health check on '/' etc.)
+    return $parts;
 }
