@@ -25,8 +25,23 @@ $subact = $seg[3] ?? null;  // 'status', 'payment', 'invoice'
 // ============================================================ Helpers
 function enrichBooking(array $b): array
 {
+    $b['_id']           = $b['id'];
+    $b['bookingId']     = $b['booking_id'];
+    $b['lodgeId']       = $b['lodge_id'];
+    $b['roomId']        = $b['room_id'];
+    $b['lodgeName']     = $b['lodge_name'];
+    $b['checkIn']       = $b['check_in'];
+    $b['checkOut']      = $b['check_out'];
+    $b['checkInTime']   = $b['check_in_time'];
+    $b['totalAmount']   = (float)$b['total_amount'];
+    $b['amountPaid']    = (float)$b['amount_paid'];
+    $b['balanceAmount'] = (float)$b['balance_amount'];
+    $b['createdAt']     = $b['created_at'];
+
     // Rebuild nested objects to mirror Node.js API shape
     $b['room'] = [
+        'id'    => $b['room_id'],
+        '_id'   => $b['room_id'],
         'type'  => $b['room_type']  ?? '',
         'name'  => $b['room_name']  ?? '',
         'price' => (float)($b['room_price'] ?? 0),
@@ -39,10 +54,9 @@ function enrichBooking(array $b): array
         'idNumber' => $b['id_number'],
     ];
 
-    unset($b['room_type'], $b['room_name'], $b['room_price'],
-          $b['customer_name'], $b['customer_mobile'], $b['customer_email'],
-          $b['id_type'], $b['id_number']);
-
+    // Keep snake_case for now to avoid breaking other things, but provide camelCase too
+    // Unset internal database fields that shouldn't be in the flat API response if any
+    
     return $b;
 }
 
