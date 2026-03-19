@@ -29,11 +29,12 @@ jobs:
         working-directory: frontend
         run: npm ci
 
-      - name: 🔨 Build Vite React App
+      - name: 🏗️ Build Frontend
         working-directory: frontend
-        env:
-          VITE_API_URL: https://deeppink-aardvark-943779.hostingersite.com/api
-        run: npm run build
+        run: |
+          echo "VITE_API_URL=https://deeppink-aardvark-943779.hostingersite.com/api" > .env
+          npm install
+          npm run build
 
       - name: 📡 FTP Upload Frontend → /public_html/
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4

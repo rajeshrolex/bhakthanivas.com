@@ -18,7 +18,7 @@ echo "🌱 BhaktaNivas – Seeding Database...\n\n";
 // ================================================================ Super Admin
 echo "👤 Creating super_admin user...\n";
 
-$adminEmail = 'info@bhakthanivas.com';
+$adminEmail = defined('ADMIN_EMAIL') && !empty(ADMIN_EMAIL) ? ADMIN_EMAIL : 'super@admin.com';
 $existing   = $db->fetchOne("SELECT id FROM users WHERE email = ?", [$adminEmail]);
 
 if (!$existing) {

@@ -1,5 +1,5 @@
 const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.') || window.location.hostname.startsWith('10.') || window.location.hostname.startsWith('172.');
-export const API_BASE_URL = import.meta.env.VITE_API_URL || (isLocalhost ? `http://${window.location.hostname}:5000/api` : 'https://bhakthanivas.com/api');
+export const API_BASE_URL = import.meta.env.VITE_API_URL || (isLocalhost ? `http://${window.location.hostname}:5000/api` : '/api');
 export const BASE_URL = API_BASE_URL.replace(/\/api$/, '');
 
 export const getImageUrl = (path) => {
