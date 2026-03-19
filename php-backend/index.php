@@ -79,6 +79,10 @@ try {
             require_once __DIR__ . '/routes/payment.php';
             break;
 
+        case 'upload':
+            require_once __DIR__ . '/routes/upload.php';
+            break;
+
         case '':
         case 'health':
             // Health check endpoint
