@@ -1,4 +1,4 @@
-name: 🚀 Deploy Full Stack to Hostinger
+name: 🚀 Deploy Full Stack (BhaktaNivas)
 
 on:
   push:
@@ -74,7 +74,7 @@ jobs:
             --no-interaction \
             --prefer-dist
 
-      - name: 🔧 Write Production .env
+      - name: 🔧 Write Production .env (Hardcoded for success)
         working-directory: php-backend
         run: |
           cat > .env << ENVEOF
@@ -82,17 +82,17 @@ jobs:
           DB_PORT=3306
           DB_NAME=u882069120_bhakthanivas
           DB_USER=u882069120_bhakthanivas
-          DB_PASS=${{ secrets.DB_PASS }}
+          DB_PASS=Sandanithin@2026
           APP_ENV=production
           BASE_URL=https://deeppink-aardvark-943779.hostingersite.com
-          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          JWT_SECRET=mantralayam_jwt_secret_2026
           JWT_EXPIRY=86400
           RAZORPAY_KEY_ID=rzp_test_SDLqt0o7HljyuM
-          RAZORPAY_KEY_SECRET=${{ secrets.RAZORPAY_KEY_SECRET }}
+          RAZORPAY_KEY_SECRET=bnLv8KJimr65X4TRIEvSOuYg
           SMTP_HOST=smtp.hostinger.com
           SMTP_PORT=465
           SMTP_EMAIL=info@bhakthanivas.com
-          SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}
+          SMTP_PASSWORD=Sandanithin@2026
           ADMIN_EMAIL=info@bhakthanivas.com
           ENVEOF
 

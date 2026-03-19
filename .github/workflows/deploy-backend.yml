@@ -7,7 +7,7 @@ on:
     paths:
       - 'php-backend/**'
       - '.github/workflows/deploy-backend.yml'
-  workflow_dispatch:   # Allow manual trigger from GitHub Actions tab
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -15,18 +15,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # ── 1. Checkout source code ─────────────────────────────────────────
       - name: 📥 Checkout Repository
         uses: actions/checkout@v4
 
-      # ── 2. Set up PHP ────────────────────────────────────────────────────
       - name: 🐘 Setup PHP 8.2
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
           tools: composer:v2
 
-      # ── 3. Install Composer dependencies ────────────────────────────────
       - name: 📦 Install Composer Dependencies
         working-directory: php-backend
         run: |
@@ -36,8 +33,7 @@ jobs:
             --no-interaction \
             --prefer-dist
 
-      # ── 4. Create production .env ────────────────────────────────────────
-      - name: 🔧 Create production .env
+      - name: 🔧 Create production .env (Hardcoded)
         working-directory: php-backend
         run: |
           cat > .env << ENVEOF
@@ -45,21 +41,20 @@ jobs:
           DB_PORT=3306
           DB_NAME=u882069120_bhakthanivas
           DB_USER=u882069120_bhakthanivas
-          DB_PASS=${{ secrets.DB_PASS }}
+          DB_PASS=Sandanithin@2026
           APP_ENV=production
-          VITE_API_URL=https://deeppink-aardvark-943779.hostingersite.com/api
-          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          BASE_URL=https://deeppink-aardvark-943779.hostingersite.com
+          JWT_SECRET=mantralayam_jwt_secret_2026
           JWT_EXPIRY=86400
           RAZORPAY_KEY_ID=rzp_test_SDLqt0o7HljyuM
-          RAZORPAY_KEY_SECRET=${{ secrets.RAZORPAY_KEY_SECRET }}
+          RAZORPAY_KEY_SECRET=bnLv8KJimr65X4TRIEvSOuYg
           SMTP_HOST=smtp.hostinger.com
           SMTP_PORT=465
           SMTP_EMAIL=info@bhakthanivas.com
-          SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}
+          SMTP_PASSWORD=Sandanithin@2026
           ADMIN_EMAIL=info@bhakthanivas.com
           ENVEOF
 
-      # ── 5. Deploy to Hostinger via FTP ───────────────────────────────────
       - name: 📡 Upload to Hostinger via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
