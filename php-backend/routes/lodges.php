@@ -21,6 +21,7 @@ $id     = isset($seg[2]) && is_numeric($seg[2]) ? (int)$seg[2] : null;
 if ($method === 'GET' && $id === null) {
     $lodges = $db->fetchAll("SELECT * FROM lodges ORDER BY name ASC");
 
+    foreach ($lodges as &$lodge) {
         $lodge['_id'] = $lodge['id'];
         $lodge['priceStarting'] = $lodge['price_starting'];
         $lodge['amenities'] = json_decode($lodge['amenities'] ?? '[]', true) ?? [];
@@ -43,6 +44,7 @@ if ($method === 'GET' && $id === null) {
             $room['extraGuestPrice'] = $room['extra_guest_price'];
             $room['amenities'] = json_decode($room['amenities'] ?? '[]', true) ?? [];
         }
+    }
     unset($lodge, $room);
 
     jsonResponse($lodges);

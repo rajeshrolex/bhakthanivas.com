@@ -30,7 +30,11 @@ if ($method === 'GET' && $id === null) {
     }
 
     foreach ($rooms as &$room) {
-        $room['amenities'] = json_decode($room['amenities'] ?? '[]', true) ?? [];
+        $room['_id']          = $room['id'];
+        $room['baseGuests']   = $room['base_guests'];
+        $room['maxOccupancy'] = $room['max_occupancy'];
+        $room['extraGuestPrice'] = $room['extra_guest_price'];
+        $room['amenities']    = json_decode($room['amenities'] ?? '[]', true) ?? [];
     }
     unset($room);
 
@@ -44,7 +48,11 @@ if ($method === 'GET' && $id !== null) {
     if (!$room) {
         jsonError('Room not found', 404);
     }
-    $room['amenities'] = json_decode($room['amenities'] ?? '[]', true) ?? [];
+    $room['_id']          = $room['id'];
+    $room['baseGuests']   = $room['base_guests'];
+    $room['maxOccupancy'] = $room['max_occupancy'];
+    $room['extraGuestPrice'] = $room['extra_guest_price'];
+    $room['amenities']    = json_decode($room['amenities'] ?? '[]', true) ?? [];
 
     jsonResponse($room);
 }
