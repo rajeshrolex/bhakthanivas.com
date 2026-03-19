@@ -79,6 +79,14 @@ try {
             require_once __DIR__ . '/routes/payment.php';
             break;
 
+        case 'migrate':
+            require_once __DIR__ . '/migrate.php';
+            break;
+
+        case 'seed':
+            require_once __DIR__ . '/seed-products.php';
+            break;
+
         case '':
         case 'health':
             // Health check endpoint
