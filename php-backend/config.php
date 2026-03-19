@@ -1,0 +1,82 @@
+<?php
+/**
+ * config.php – Central configuration loader
+ * Loads .env and defines all app constants
+ */
+
+declare(strict_types=1);
+
+// Load Composer autoloader
+$autoload = __DIR__ . '/vendor/autoload.php';
+if (!file_exists($autoload)) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Run: composer install inside php-backend/']);
+    exit;
+}
+require_once $autoload;
+
+// Load .env
+use Dotenv\Dotenv;
+
+$dotenv = Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
+// --- Database ---
+define('DB_HOST', $_ENV['DB_HOST'] ?? 'localhost');
+define('DB_PORT', $_ENV['DB_PORT'] ?? '3306');
+define('DB_NAME', $_ENV['DB_NAME'] ?? 'bhakthanivas');
+define('DB_USER', $_ENV['DB_USER'] ?? 'root');
+define('DB_PASS', $_ENV['DB_PASS'] ?? '');
+
+// --- App ---
+define('APP_ENV',  $_ENV['APP_ENV']  ?? 'production');
+define('BASE_URL', rtrim($_ENV['BASE_URL'] ?? 'http://localhost', '/'));
+
+// --- JWT ---
+define('JWT_SECRET', $_ENV['JWT_SECRET'] ?? 'changeme');
+define('JWT_EXPIRY', (int)($_ENV['JWT_EXPIRY'] ?? 86400));   // 24h default
+
+// --- Razorpay ---
+define('RAZORPAY_KEY_ID',     $_ENV['RAZORPAY_KEY_ID']     ?? '');
+define('RAZORPAY_KEY_SECRET', $_ENV['RAZORPAY_KEY_SECRET'] ?? '');
+
+// --- SMTP ---
+define('SMTP_HOST',     $_ENV['SMTP_HOST']     ?? 'smtp.hostinger.com');
+define('SMTP_PORT',     (int)($_ENV['SMTP_PORT'] ?? 465));
+define('SMTP_EMAIL',    $_ENV['SMTP_EMAIL']    ?? '');
+define('SMTP_PASSWORD', $_ENV['SMTP_PASSWORD'] ?? '');
+define('ADMIN_EMAIL',   $_ENV['ADMIN_EMAIL']   ?? '');
+
+// --- Helper: JSON response ---
+function jsonResponse(mixed $data, int $status = 200): void
+{
+    http_response_code($status);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+    exit;
+}
+
+// --- Helper: JSON error response ---
+function jsonError(string $message, int $status = 400): void
+{
+    jsonResponse(['success' => false, 'error' => $message], $status);
+}
+
+// --- Helper: Get parsed JSON body ---
+function getBody(): array
+{
+    $raw = file_get_contents('php://input');
+    if (empty($raw)) return [];
+    $decoded = json_decode($raw, true);
+    return is_array($decoded) ? $decoded : [];
+}
+
+// --- Helper: Get path segments from URI ---
+function getPathSegments(): array
+{
+    $uri    = $_SERVER['REQUEST_URI'] ?? '/';
+    $path   = parse_url($uri, PHP_URL_PATH);
+    $path   = preg_replace('#^/php-backend(/index\.php)?#', '', $path ?? '');
+    $path   = trim($path, '/');
+    return empty($path) ? [] : explode('/', $path);
+}

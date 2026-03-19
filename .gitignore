@@ -1,6 +1,25 @@
+### Node.js / Frontend ###
 node_modules/
 dist/
-.env
-.DS_Store
-coverage/
 *.log
+lint_results.*
+parsed_lint.txt
+readable_lint.txt
+parse_lint.cjs
+
+### Environment files (NEVER commit secrets) ###
+.env
+.env.local
+.env.production
+
+### PHP / Composer ###
+vendor/
+php-backend/vendor/
+composer.lock
+
+### OS files ###
+.DS_Store
+Thumbs.db
+
+### Build artifacts ###
+coverage/

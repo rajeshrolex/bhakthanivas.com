@@ -1,0 +1,31 @@
+# Apache Configuration for PHP Backend
+# Rewrites all requests to index.php (front controller pattern)
+
+Options -Indexes
+Options +FollowSymLinks
+
+RewriteEngine On
+
+# Handle CORS preflight requests
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+# Serve existing files and directories directly (uploads, etc.)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Route everything else to index.php
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+# Security: block access to sensitive files
+<FilesMatch "^(\.env|composer\.(json|lock)|database\.php)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Disable PHP error output in production (use error_log instead)
+php_flag display_errors Off
+php_flag log_errors On
+
+# Set default timezone
+php_value date.timezone "Asia/Kolkata"

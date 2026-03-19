@@ -1,0 +1,76 @@
+name: 🚀 Deploy PHP Backend to Hostinger
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'php-backend/**'
+      - '.github/workflows/deploy-backend.yml'
+  workflow_dispatch:   # Allow manual trigger from GitHub Actions tab
+
+jobs:
+  deploy:
+    name: Deploy PHP Backend via FTP
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── 1. Checkout source code ─────────────────────────────────────────
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      # ── 2. Set up PHP ────────────────────────────────────────────────────
+      - name: 🐘 Setup PHP 8.2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer:v2
+
+      # ── 3. Install Composer dependencies ────────────────────────────────
+      - name: 📦 Install Composer Dependencies
+        working-directory: php-backend
+        run: |
+          composer install \
+            --no-dev \
+            --optimize-autoloader \
+            --no-interaction \
+            --prefer-dist
+
+      # ── 4. Create production .env ────────────────────────────────────────
+      - name: 🔧 Create production .env
+        working-directory: php-backend
+        run: |
+          cat > .env << 'EOF'
+          DB_HOST=localhost
+          DB_PORT=3306
+          DB_NAME=${{ secrets.DB_NAME }}
+          DB_USER=${{ secrets.DB_USER }}
+          DB_PASS=${{ secrets.DB_PASS }}
+          APP_ENV=production
+          BASE_URL=${{ secrets.BASE_URL }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          JWT_EXPIRY=86400
+          RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }}
+          RAZORPAY_KEY_SECRET=${{ secrets.RAZORPAY_KEY_SECRET }}
+          SMTP_HOST=${{ secrets.SMTP_HOST }}
+          SMTP_PORT=${{ secrets.SMTP_PORT }}
+          SMTP_EMAIL=${{ secrets.SMTP_EMAIL }}
+          SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}
+          ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}
+          EOF
+
+      # ── 5. Deploy to Hostinger via FTP ───────────────────────────────────
+      - name: 📡 Upload to Hostinger via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./php-backend/
+          server-dir: /public_html/api/
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/*.log
+            **/test-*.php
