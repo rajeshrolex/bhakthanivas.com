@@ -1,0 +1,16 @@
+[dotenv@17.2.3] injecting env (8) from .env -- tip: 📡 add observability to secrets: https://dotenvx.com/ops
+Connected to MongoDB
+Total Lodges: 4
+Lodge: "Shri Hari Retreat" (shri-hari-retreat) ID: 69b84b461b6d5f4eaec52c15
+  Room: "Standard Room" | Type: Non-AC | Total: 5 | Available: 0 | ID: 69b84b461b6d5f4eaec52c17
+  Room: "Premium AC Suite" | Type: AC | Total: 3 | Available: 1 | ID: 69b84b461b6d5f4eaec52c18
+Lodge: "Pavithra Residency" (pavithra-residency) ID: 69b84b461b6d5f4eaec52c1a
+  Room: "Standard Room" | Type: Non-AC | Total: 8 | Available: 8 | ID: 69b84b461b6d5f4eaec52c1d
+  Room: "Family AC Room" | Type: AC | Total: 4 | Available: 4 | ID: 69b84b461b6d5f4eaec52c1e
+Lodge: "Mantralayam Grand Lodge" (mantralayam-grand-lodge) ID: 69b84b461b6d5f4eaec52c20
+  Room: "Budget Double" | Type: Non-AC | Total: 10 | Available: 1 | ID: 69b84b461b6d5f4eaec52c22
+  Room: "Standard AC" | Type: AC | Total: 6 | Available: 6 | ID: 69b84b461b6d5f4eaec52c23
+  Room: "Grand Family Group" | Type: AC | Total: 2 | Available: 2 | ID: 69b84b461b6d5f4eaec52c24
+Lodge: "Yatri Nivas by Swamy" (yatri-nivas-by-swamy) ID: 69b84b461b6d5f4eaec52c26
+  Room: "Basic Room" | Type: Non-AC | Total: 3 | Available: 3 | ID: 69b84b461b6d5f4eaec52c28
+  Room: "4-Bed Setup" | Type: Non-AC | Total: 1 | Available: 1 | ID: 69b84b461b6d5f4eaec52c29

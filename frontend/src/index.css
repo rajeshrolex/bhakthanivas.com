@@ -1,0 +1,290 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Inter', system-ui, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  --primary-gradient: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  --gold-gradient: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: #fafafa;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+    scroll-behavior: smooth;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Poppins', sans-serif;
+  }
+}
+
+@layer components {
+
+  /* Primary Buttons */
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-xl shadow-lg text-sm font-semibold text-white bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98];
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-6 py-3 border-2 border-primary-500 rounded-xl shadow-sm text-sm font-semibold text-primary-600 bg-white hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-300;
+  }
+
+  .btn-whatsapp {
+    @apply inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-xl shadow-lg text-sm font-semibold text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98];
+  }
+
+  .btn-call {
+    @apply inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-xl shadow-lg text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98];
+  }
+
+  /* Input Fields */
+  .input-primary {
+    @apply block w-full px-4 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-gray-900 placeholder-gray-400 transition-all duration-200;
+  }
+
+  /* Cards */
+  .card {
+    @apply bg-white rounded-2xl shadow-card overflow-hidden transition-all duration-300 hover:shadow-elevated;
+  }
+
+  .card-glass {
+    @apply bg-white/80 backdrop-blur-lg rounded-2xl shadow-glass border border-white/20;
+  }
+
+  /* Badges */
+  .badge-available {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800;
+  }
+
+  .badge-limited {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800;
+  }
+
+  .badge-full {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800;
+  }
+
+  .badge-distance {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-primary-100 text-primary-700;
+  }
+
+  /* Skeleton Loading */
+  .skeleton {
+    @apply animate-pulse bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] animate-shimmer rounded-lg;
+  }
+
+  /* Floating Action Button */
+  .fab {
+    @apply fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full shadow-elevated flex items-center justify-center transition-all duration-300 hover:scale-110;
+  }
+
+  /* Section Headers */
+  .section-title {
+    @apply text-2xl md:text-3xl font-bold text-gray-900 font-heading;
+  }
+
+  .section-subtitle {
+    @apply text-gray-600 mt-2;
+  }
+
+  /* Price Tag */
+  .price-tag {
+    @apply text-xl font-bold text-primary-600;
+  }
+
+  .price-unit {
+    @apply text-sm font-normal text-gray-500;
+  }
+
+  /* Star Rating */
+  .star-filled {
+    @apply text-yellow-400;
+  }
+
+  .star-empty {
+    @apply text-gray-300;
+  }
+}
+
+@layer utilities {
+
+  /* Glassmorphism */
+  .glass {
+    @apply bg-white/70 backdrop-blur-md border border-white/20;
+  }
+
+  .glass-dark {
+    @apply bg-gray-900/70 backdrop-blur-md border border-gray-700/20;
+  }
+
+  /* Text Gradients */
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-500 to-primary-700;
+  }
+
+  .text-gradient-gold {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-gold-400 to-gold-600;
+  }
+
+  /* Hide Scrollbar */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Line Clamp */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Mobile First Responsive */
+  .container-mobile {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Touch Friendly Buttons */
+  .touch-btn {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  /* Mobile Safe Area */
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Prevent horizontal scroll */
+  .overflow-x-safe {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+}
+
+/* Mobile Specific Fixes */
+@media (max-width: 640px) {
+
+  .btn-primary,
+  .btn-secondary,
+  .btn-whatsapp,
+  .btn-call {
+    @apply px-4 py-3 text-sm;
+  }
+
+  .section-title {
+    @apply text-xl;
+  }
+
+  /* Stack buttons on mobile */
+  .btn-group-mobile {
+    @apply flex-col gap-2;
+  }
+
+  /* Full width cards on mobile */
+  .card {
+    @apply rounded-xl;
+  }
+
+  /* Better touch targets */
+  input,
+  select,
+  button {
+    font-size: 16px !important;
+    /* Prevent iOS zoom */
+  }
+
+  /* Prevent horizontal overflow */
+  body,
+  #root {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  /* Better spacing for containers */
+  .max-w-7xl,
+  .max-w-4xl,
+  .max-w-2xl {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  /* Smaller font for long text */
+  .font-mono {
+    font-size: 11px !important;
+    word-break: break-all;
+  }
+
+  /* Better modals on mobile */
+  .fixed.inset-0 .max-w-2xl,
+  .fixed.inset-0 .max-w-3xl,
+  .fixed.inset-0 .max-w-4xl {
+    margin: 8px;
+    max-height: calc(100vh - 16px);
+  }
+}
+
+/* Small phone fixes (< 375px) */
+@media (max-width: 375px) {
+  .section-title {
+    font-size: 1.125rem !important;
+  }
+
+  .text-2xl {
+    font-size: 1.25rem !important;
+  }
+
+  .text-3xl {
+    font-size: 1.5rem !important;
+  }
+
+  .px-6 {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+}
+
+/* Smooth animations for mobile */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
