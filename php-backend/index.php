@@ -79,14 +79,6 @@ try {
             require_once __DIR__ . '/routes/payment.php';
             break;
 
-        case 'migrate':
-            require_once __DIR__ . '/migrate.php';
-            break;
-
-        case 'seed':
-            require_once __DIR__ . '/seed-products.php';
-            break;
-
         case '':
         case 'health':
             // Health check endpoint
@@ -109,7 +101,7 @@ try {
     echo json_encode([
         'success' => false,
         'error'   => 'Database error',
-        'message' => $e->getMessage(), // Temporarily show full error
+        'message' => APP_ENV === 'development' ? $e->getMessage() : 'Internal server error',
     ]);
     exit;
 
@@ -119,7 +111,7 @@ try {
     echo json_encode([
         'success' => false,
         'error'   => 'Internal server error',
-        'message' => $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine(), // Temporarily show full error
+        'message' => APP_ENV === 'development' ? $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() : 'An unexpected error occurred',
     ]);
     exit;
 }
