@@ -107,7 +107,7 @@ if ($method === 'POST' && ($seg[2] ?? '') === 'bulk') {
         $added++;
     }
 
-    jsonResponse($reviews);
+    jsonResponse(['success' => true, 'added' => $added, 'skipped' => $skipped]);
 }
 
 // ============================================================== DELETE

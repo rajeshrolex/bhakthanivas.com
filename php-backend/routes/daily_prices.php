@@ -122,17 +122,7 @@ if ($method === 'POST' && ($seg[2] ?? '') === 'bulk') {
                 [$price, $isBlocked, $existing['id']]
             );
             $updated++;
-        } else {
-            $db->query(
-                "INSERT INTO daily_prices (lodge_id, date, room_type, price, is_blocked) VALUES (?,?,?,?,?)",
-                [$lodgeId, $date, $roomType, $price, $isBlocked]
-            );
-            $inserted++;
-            $dates[] = $db->fetchOne("SELECT * FROM daily_prices WHERE id = ?", [$db->lastInsertId()]);
-        }
-    }
-
-    jsonResponse($dates);
+    jsonResponse(['success' => true, 'inserted' => $inserted, 'updated' => $updated]);
 }
 
 // ============================================================== DELETE
