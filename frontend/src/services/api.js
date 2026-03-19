@@ -407,6 +407,45 @@ export const blockedDatesAPI = {
     },
 };
 
+// ── Temple API ────────────────────────────────────────────────────────────────
+export const templeAPI = {
+    getAll: async () => {
+        const response = await fetch(`${API_BASE_URL}/temples?t=${Date.now()}`);
+        return handleResponse(response);
+    },
+
+    getById: async (id) => {
+        const response = await fetch(`${API_BASE_URL}/temples/${id}?t=${Date.now()}`);
+        return handleResponse(response);
+    },
+
+    create: async (templeData) => {
+        const response = await fetch(`${API_BASE_URL}/temples`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(templeData),
+        });
+        return handleResponse(response);
+    },
+
+    update: async (id, templeData) => {
+        const response = await fetch(`${API_BASE_URL}/temples/${id}`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(templeData),
+        });
+        return handleResponse(response);
+    },
+
+    delete: async (id) => {
+        const response = await fetch(`${API_BASE_URL}/temples/${id}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders(),
+        });
+        return handleResponse(response);
+    },
+};
+
 // Default export for backward compatibility
 export default {
     lodgeAPI,
@@ -419,4 +458,5 @@ export default {
     reviewAPI,
     dailyPriceAPI,
     blockedDatesAPI,
+    templeAPI,
 };

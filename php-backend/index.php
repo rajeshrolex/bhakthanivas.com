@@ -78,6 +78,10 @@ try {
         case 'payment':
             require_once __DIR__ . '/routes/payment.php';
             break;
+        
+        case 'temples':
+            require_once __DIR__ . '/routes/temples.php';
+            break;
 
         case 'upload':
             require_once __DIR__ . '/routes/upload.php';
