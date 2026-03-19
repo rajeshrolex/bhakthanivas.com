@@ -34,7 +34,8 @@ jobs:
             --no-dev \
             --optimize-autoloader \
             --no-interaction \
-            --prefer-dist
+            --prefer-dist \
+            --no-audit
 
       # ── 4. Create production .env ────────────────────────────────────────
       - name: 🔧 Create production .env
