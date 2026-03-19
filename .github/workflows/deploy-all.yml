@@ -72,8 +72,7 @@ jobs:
             --no-dev \
             --optimize-autoloader \
             --no-interaction \
-            --prefer-dist \
-            --no-audit
+            --prefer-dist
 
       - name: 🔧 Write Production .env
         working-directory: php-backend
