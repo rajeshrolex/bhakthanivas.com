@@ -40,7 +40,7 @@ jobs:
         with:
           server: 145.79.213.144
           username: u882069120.deeppink-aardvark-943779.hostingersite.com
-          password: ${{ secrets.FTP_PASSWORD }}
+          password: Sandanithin@2026
           local-dir: ./frontend/dist/
           server-dir: /public_html/
           exclude: |
@@ -102,7 +102,7 @@ jobs:
         with:
           server: 145.79.213.144
           username: u882069120.deeppink-aardvark-943779.hostingersite.com
-          password: ${{ secrets.FTP_PASSWORD }}
+          password: Sandanithin@2026
           local-dir: ./php-backend/
           server-dir: /public_html/api/
           exclude: |
