@@ -101,7 +101,7 @@ try {
     echo json_encode([
         'success' => false,
         'error'   => 'Database error',
-        'message' => APP_ENV === 'development' ? $e->getMessage() : 'Internal server error',
+        'message' => $e->getMessage(), // Temporarily show full error
     ]);
     exit;
 
