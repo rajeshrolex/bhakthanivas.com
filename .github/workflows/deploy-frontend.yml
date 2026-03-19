@@ -36,7 +36,7 @@ jobs:
       - name: 🔨 Build React App (Vite)
         working-directory: frontend
         env:
-          VITE_API_URL: https://palegoldenrod-beaver-753826.hostingersite.com/api
+          VITE_API_URL: https://deeppink-aardvark-943779.hostingersite.com/api
         run: npm run build
 
       # ── 5. Deploy dist/ to Hostinger ────────────────────────────────────

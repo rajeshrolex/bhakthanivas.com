@@ -47,7 +47,7 @@ jobs:
           DB_USER=u882069120_bhakthanivas
           DB_PASS=${{ secrets.DB_PASS }}
           APP_ENV=production
-          BASE_URL=https://palegoldenrod-beaver-753826.hostingersite.com
+          VITE_API_URL=https://deeppink-aardvark-943779.hostingersite.com/api
           JWT_SECRET=${{ secrets.JWT_SECRET }}
           JWT_EXPIRY=86400
           RAZORPAY_KEY_ID=rzp_test_SDLqt0o7HljyuM

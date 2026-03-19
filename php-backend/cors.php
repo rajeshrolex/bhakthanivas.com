@@ -13,6 +13,7 @@ $allowedOrigins = [
     'https://bhakthanivas.com',
     'https://www.bhakthanivas.com',
     'https://palegoldenrod-beaver-753826.hostingersite.com',
+    'https://deeppink-aardvark-943779.hostingersite.com',
 ];
 
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
