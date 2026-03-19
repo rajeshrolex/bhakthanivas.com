@@ -11,10 +11,23 @@
 
 declare(strict_types=1);
 
-$db     = Database::getInstance();
-$method = $_SERVER['REQUEST_METHOD'];
-$seg    = getPathSegments();
 $id     = isset($seg[2]) && is_numeric($seg[2]) ? (int)$seg[2] : null;
+
+/**
+ * Helper to add frontend-compatible fields to a room array
+ */
+function enrichRoom(array $room): array
+{
+    $room['_id']              = $room['id'];
+    $room['baseGuests']       = (int)($room['base_guests'] ?? 2);
+    $room['maxOccupancy']     = (int)($room['max_occupancy'] ?? 2);
+    $room['extraGuestPrice']  = (float)($room['extra_guest_price'] ?? 0);
+    $room['price']            = (float)($room['price'] ?? 0);
+    $room['totalRooms']       = (int)($room['total_rooms'] ?? 0);
+    $room['available']        = (int)($room['available'] ?? 0);
+    $room['amenities']        = json_decode($room['amenities'] ?? '[]', true) ?? [];
+    return $room;
+}
 
 // ================================================================ GET /rooms
 if ($method === 'GET' && $id === null) {
@@ -30,14 +43,8 @@ if ($method === 'GET' && $id === null) {
     }
 
     foreach ($rooms as &$room) {
-        $room['_id']          = $room['id'];
-        $room['baseGuests']   = $room['base_guests'];
-        $room['maxOccupancy'] = $room['max_occupancy'];
-        $room['extraGuestPrice'] = $room['extra_guest_price'];
-        $room['amenities']    = json_decode($room['amenities'] ?? '[]', true) ?? [];
+        $room = enrichRoom($room);
     }
-    unset($room);
-
     jsonResponse($rooms);
 }
 
@@ -48,12 +55,7 @@ if ($method === 'GET' && $id !== null) {
     if (!$room) {
         jsonError('Room not found', 404);
     }
-    $room['_id']          = $room['id'];
-    $room['baseGuests']   = $room['base_guests'];
-    $room['maxOccupancy'] = $room['max_occupancy'];
-    $room['extraGuestPrice'] = $room['extra_guest_price'];
-    $room['amenities']    = json_decode($room['amenities'] ?? '[]', true) ?? [];
-
+    $room = enrichRoom($room);
     jsonResponse($room);
 }
 
@@ -93,9 +95,9 @@ if ($method === 'POST' && $id === null) {
         ]
     );
 
-    $newId = $db->lastInsertId();
+    $newId = (int)$db->lastInsertId();
     $room  = $db->fetchOne("SELECT * FROM rooms WHERE id = ?", [$newId]);
-    $room['amenities'] = json_decode($room['amenities'] ?? '[]', true) ?? [];
+    $room  = enrichRoom($room);
 
     jsonResponse($room, 201);
 }
@@ -140,7 +142,7 @@ if ($method === 'PUT' && $id !== null) {
     );
 
     $updated = $db->fetchOne("SELECT * FROM rooms WHERE id = ?", [$id]);
-    $updated['amenities'] = json_decode($updated['amenities'] ?? '[]', true) ?? [];
+    $updated = enrichRoom($updated);
 
     jsonResponse($updated);
 }
