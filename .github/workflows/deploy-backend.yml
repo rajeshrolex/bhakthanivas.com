@@ -40,31 +40,31 @@ jobs:
       - name: 🔧 Create production .env
         working-directory: php-backend
         run: |
-          cat > .env << 'EOF'
+          cat > .env << ENVEOF
           DB_HOST=localhost
           DB_PORT=3306
-          DB_NAME=${{ secrets.DB_NAME }}
-          DB_USER=${{ secrets.DB_USER }}
+          DB_NAME=u882069120_bhakthanivas
+          DB_USER=u882069120_bhakthanivas
           DB_PASS=${{ secrets.DB_PASS }}
           APP_ENV=production
-          BASE_URL=${{ secrets.BASE_URL }}
+          BASE_URL=https://palegoldenrod-beaver-753826.hostingersite.com
           JWT_SECRET=${{ secrets.JWT_SECRET }}
           JWT_EXPIRY=86400
-          RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }}
+          RAZORPAY_KEY_ID=rzp_test_SDLqt0o7HljyuM
           RAZORPAY_KEY_SECRET=${{ secrets.RAZORPAY_KEY_SECRET }}
-          SMTP_HOST=${{ secrets.SMTP_HOST }}
-          SMTP_PORT=${{ secrets.SMTP_PORT }}
-          SMTP_EMAIL=${{ secrets.SMTP_EMAIL }}
+          SMTP_HOST=smtp.hostinger.com
+          SMTP_PORT=465
+          SMTP_EMAIL=info@bhakthanivas.com
           SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}
-          ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}
-          EOF
+          ADMIN_EMAIL=info@bhakthanivas.com
+          ENVEOF
 
       # ── 5. Deploy to Hostinger via FTP ───────────────────────────────────
       - name: 📡 Upload to Hostinger via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
+          server: 145.79.213.144
+          username: u882069120.deeppink-aardvark-943779.hostingersite.com
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./php-backend/
           server-dir: /public_html/api/

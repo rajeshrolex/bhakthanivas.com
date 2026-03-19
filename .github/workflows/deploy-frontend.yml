@@ -36,15 +36,15 @@ jobs:
       - name: 🔨 Build React App (Vite)
         working-directory: frontend
         env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_API_URL: https://palegoldenrod-beaver-753826.hostingersite.com/api
         run: npm run build
 
       # ── 5. Deploy dist/ to Hostinger ────────────────────────────────────
       - name: 📡 Upload to Hostinger via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
+          server: 145.79.213.144
+          username: u882069120.deeppink-aardvark-943779.hostingersite.com
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./frontend/dist/
           server-dir: /public_html/
