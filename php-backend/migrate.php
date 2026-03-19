@@ -162,9 +162,31 @@ $tables = [
             name       VARCHAR(255) NOT NULL,
             rating     TINYINT UNSIGNED NOT NULL CHECK (rating BETWEEN 1 AND 5),
             comment    TEXT         NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            created_at TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (lodge_id) REFERENCES lodges(id) ON DELETE CASCADE,
             INDEX idx_lodge_rating (lodge_id, rating)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    ",
+
+    // ---------------------------------------------------------------- temples
+    'temples' => "
+        CREATE TABLE IF NOT EXISTS temples (
+            id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            name       VARCHAR(255) NOT NULL,
+            location   VARCHAR(255),
+            google_maps_link TEXT,
+            distance   VARCHAR(255),
+            darshan_timings TEXT,
+            special_darshan_timings TEXT,
+            nearby_railway_station_title VARCHAR(255) DEFAULT 'Nearby Railway Station',
+            nearby_railway_station TEXT,
+            bus_timings_title VARCHAR(255) DEFAULT 'Bus Timings',
+            bus_timings TEXT,
+            description TEXT,
+            additional_info TEXT,
+            images JSON,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     ",
 

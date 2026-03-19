@@ -20,11 +20,26 @@ $rawId  = $seg[2] ?? null;
 if ($method === 'GET' && $rawId === null) {
     $temples = $db->fetchAll("SELECT * FROM temples ORDER BY name ASC");
     
-    // Enrich with formatted fields (e.g. images as array)
     $enriched = array_map(function($t) {
-        $t['_id']    = $t['id'];
-        $t['images'] = !empty($t['images']) ? json_decode($t['images'], true) : [];
-        return $t;
+        return [
+            '_id'              => $t['id'],
+            'id'               => $t['id'],
+            'name'             => $t['name'],
+            'location'         => $t['location'],
+            'googleMapsLink'   => $t['google_maps_link'],
+            'distance'         => $t['distance'],
+            'darshanTimings'   => $t['darshan_timings'],
+            'specialDarshanTimings' => $t['special_darshan_timings'],
+            'nearbyRailwayStationTitle' => $t['nearby_railway_station_title'],
+            'nearbyRailwayStation'      => $t['nearby_railway_station'],
+            'busTimingsTitle'  => $t['bus_timings_title'],
+            'busTimings'       => $t['bus_timings'],
+            'description'      => $t['description'],
+            'additionalInfo'   => $t['additional_info'],
+            'images'           => !empty($t['images']) ? json_decode($t['images'], true) : [],
+            'createdAt'        => $t['created_at'],
+            'updatedAt'        => $t['updated_at']
+        ];
     }, $temples);
     
     jsonResponse($enriched);
@@ -32,13 +47,28 @@ if ($method === 'GET' && $rawId === null) {
 
 // ============================================================ GET /temples/:id
 if ($method === 'GET' && $rawId !== null) {
-    $temple = $db->fetchOne("SELECT * FROM temples WHERE id = ?", [(int)$rawId]);
-    if (!$temple) jsonError('Temple not found', 404);
+    $t = $db->fetchOne("SELECT * FROM temples WHERE id = ?", [(int)$rawId]);
+    if (!$t) jsonError('Temple not found', 404);
     
-    $temple['_id']    = $temple['id'];
-    $temple['images'] = !empty($temple['images']) ? json_decode($temple['images'], true) : [];
-    
-    jsonResponse($temple);
+    jsonResponse([
+        '_id'              => $t['id'],
+        'id'               => $t['id'],
+        'name'             => $t['name'],
+        'location'         => $t['location'],
+        'googleMapsLink'   => $t['google_maps_link'],
+        'distance'         => $t['distance'],
+        'darshanTimings'   => $t['darshan_timings'],
+        'specialDarshanTimings' => $t['special_darshan_timings'],
+        'nearbyRailwayStationTitle' => $t['nearby_railway_station_title'],
+        'nearbyRailwayStation'      => $t['nearby_railway_station'],
+        'busTimingsTitle'  => $t['bus_timings_title'],
+        'busTimings'       => $t['bus_timings'],
+        'description'      => $t['description'],
+        'additionalInfo'   => $t['additional_info'],
+        'images'           => !empty($t['images']) ? json_decode($t['images'], true) : [],
+        'createdAt'        => $t['created_at'],
+        'updatedAt'        => $t['updated_at']
+    ]);
 }
 
 // ============================================================ POST /temples
