@@ -44,7 +44,7 @@ $tables = [
             name          VARCHAR(255) NOT NULL,
             slug          VARCHAR(255) NOT NULL UNIQUE,
             tagline       TEXT,
-            images        JSON,
+            images        LONGTEXT,
             distance      VARCHAR(100) DEFAULT '',
             distance_type ENUM('walkable','auto') DEFAULT 'walkable',
             rating        DECIMAL(3,1) UNSIGNED DEFAULT 0.0,
@@ -52,7 +52,7 @@ $tables = [
             price_starting DECIMAL(10,2) UNSIGNED NOT NULL DEFAULT 0,
             availability  ENUM('available','limited','full') DEFAULT 'available',
             featured      TINYINT(1) DEFAULT 0,
-            amenities     JSON,
+            amenities     LONGTEXT,
             address       TEXT,
             phone         VARCHAR(50),
             whatsapp      VARCHAR(50),
@@ -79,7 +79,7 @@ $tables = [
             max_occupancy     TINYINT UNSIGNED DEFAULT 2,
             total_rooms       SMALLINT UNSIGNED NOT NULL DEFAULT 0,
             available         SMALLINT UNSIGNED DEFAULT 0,
-            amenities         JSON,
+            amenities         LONGTEXT,
             FOREIGN KEY (lodge_id) REFERENCES lodges(id) ON DELETE CASCADE,
             INDEX idx_lodge_type (lodge_id, type)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
@@ -184,7 +184,7 @@ $tables = [
             bus_timings TEXT,
             description TEXT,
             additional_info TEXT,
-            images JSON,
+            images LONGTEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
@@ -216,6 +216,19 @@ try {
     echo "  ✅  Foreign key users.lodge_id -> lodges.id\n";
 } catch (\PDOException $e) {
     // Ignore if FK already exists or not supported
+}
+
+// Fix for shared hosting that doesn't support JSON type
+$fixJsonSql = [
+    "ALTER TABLE lodges MODIFY COLUMN images LONGTEXT",
+    "ALTER TABLE lodges MODIFY COLUMN amenities LONGTEXT",
+    "ALTER TABLE rooms MODIFY COLUMN amenities LONGTEXT",
+    "ALTER TABLE temples MODIFY COLUMN images LONGTEXT"
+];
+foreach ($fixJsonSql as $sql) {
+    try {
+        $pdo->exec($sql);
+    } catch (\PDOException $e) { /* Ignore if it fails */ }
 }
 
 // Add FK for bookings.room_id
