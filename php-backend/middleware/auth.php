@@ -45,7 +45,7 @@ function requireAuth(): array
     } catch (SignatureInvalidException $e) {
         jsonError('Invalid token signature.', 401);
     } catch (\Exception $e) {
-        jsonError('Invalid or malformed token.', 401);
+        jsonError('Invalid or malformed token: ' . $e->getMessage(), 401);
     }
 
     // Unreachable, but satisfies return type
