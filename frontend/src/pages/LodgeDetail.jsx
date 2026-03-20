@@ -197,21 +197,24 @@ const LodgeDetail = () => {
     };
 
     const handleRoomSelect = (room) => {
+        if (!room) return;
         setSelectedRoom(room);
         selectRoom(room);
 
-        // Clamp rooms to what's available for this new room type
-        const newRooms = Math.min(rooms, room.available || 1);
+        // Calculate if we need more rooms for current guest count
+        const maxOccupancy = room.maxOccupancy || 6;
+        let newRooms = Math.max(rooms, Math.ceil(guests / maxOccupancy));
+        // Clamp to what's available for this new room type
+        newRooms = Math.min(newRooms, room.available || 1);
+        
         setRoomsValue(newRooms);
         setRooms(newRooms);
 
         // Clamp guests to this room's max occupancy * (new) rooms
-        const maxGuests = (room?.maxOccupancy || 6) * newRooms;
-        setGuestsValue((prev) => {
-            const next = Math.min(prev || 1, maxGuests);
-            setGuests(next);
-            return next;
-        });
+        const maxGuestsForNewRooms = maxOccupancy * newRooms;
+        const nextGuests = Math.min(guests || 1, maxGuestsForNewRooms);
+        setGuestsValue(nextGuests);
+        setGuests(nextGuests);
     };
 
     // Calculate total nights and per-night breakdown
@@ -429,7 +432,7 @@ const LodgeDetail = () => {
                                             }}
                                             className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 appearance-none"
                                         >
-                                            {Array.from({ length: selectedRoom ? Math.min(10, selectedRoom.available) : 10 }, (_, i) => i + 1).map(num => (
+                                            {Array.from({ length: selectedRoom ? Math.min(8, selectedRoom.available) : 8 }, (_, i) => i + 1).map(num => (
                                                 <option key={num} value={num}>{num} {num === 1 ? 'Room' : 'Rooms'}</option>
                                             ))}
                                         </select>
@@ -442,13 +445,27 @@ const LodgeDetail = () => {
                                         <select
                                             value={guests}
                                             onChange={(e) => {
-                                                const value = Number(e.target.value);
-                                                setGuestsValue(value);
-                                                setGuests(value);
+                                                const g = Number(e.target.value);
+                                                setGuestsValue(g);
+                                                setGuests(g);
+                                                if (selectedRoom) {
+                                                    const minR = Math.ceil(g / (selectedRoom.maxOccupancy || 6));
+                                                    if (rooms < minR) {
+                                                        const cappedR = Math.min(minR, selectedRoom.available);
+                                                        setRoomsValue(cappedR);
+                                                        setRooms(cappedR);
+                                                        // Re-check guest count after room cap
+                                                        const maxAllowedG = cappedR * (selectedRoom.maxOccupancy || 6);
+                                                        if (g > maxAllowedG) {
+                                                            setGuestsValue(maxAllowedG);
+                                                            setGuests(maxAllowedG);
+                                                        }
+                                                    }
+                                                }
                                             }}
                                             className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 appearance-none"
                                         >
-                                            {Array.from({ length: selectedRoom ? maxGuestsForSelectedRoom : 30 }, (_, i) => i + 1).map(num => (
+                                            {Array.from({ length: selectedRoom ? maxGuestsForSelectedRoom : 16 }, (_, i) => i + 1).map(num => (
                                                 <option key={num} value={num}>{num} {num === 1 ? 'Guest' : 'Guests'}</option>
                                             ))}
                                         </select>
@@ -634,7 +651,7 @@ const LodgeDetail = () => {
                                                     }}
                                                     className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none"
                                                 >
-                                                    {Array.from({ length: selectedRoom ? Math.min(10, selectedRoom.available) : 10 }, (_, i) => i + 1).map(num => (
+                                                    {Array.from({ length: selectedRoom ? Math.min(8, selectedRoom.available) : 8 }, (_, i) => i + 1).map(num => (
                                                         <option key={num} value={num}>{num} {num === 1 ? 'Room' : 'Rooms'}</option>
                                                     ))}
                                                 </select>
@@ -647,13 +664,27 @@ const LodgeDetail = () => {
                                                 <select
                                                     value={guests}
                                                     onChange={(e) => {
-                                                        const value = Number(e.target.value);
-                                                        setGuestsValue(value);
-                                                        setGuests(value);
+                                                        const g = Number(e.target.value);
+                                                        setGuestsValue(g);
+                                                        setGuests(g);
+                                                        if (selectedRoom) {
+                                                            const minR = Math.ceil(g / (selectedRoom.maxOccupancy || 6));
+                                                            if (rooms < minR) {
+                                                                const cappedR = Math.min(minR, selectedRoom.available);
+                                                                setRoomsValue(cappedR);
+                                                                setRooms(cappedR);
+                                                                // Re-check guest count after room cap
+                                                                const maxAllowedG = cappedR * (selectedRoom.maxOccupancy || 6);
+                                                                if (g > maxAllowedG) {
+                                                                    setGuestsValue(maxAllowedG);
+                                                                    setGuests(maxAllowedG);
+                                                                }
+                                                            }
+                                                        }
                                                     }}
                                                     className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none"
                                                 >
-                                                    {Array.from({ length: selectedRoom ? maxGuestsForSelectedRoom : 30 }, (_, i) => i + 1).map(num => (
+                                                    {Array.from({ length: selectedRoom ? maxGuestsForSelectedRoom : 16 }, (_, i) => i + 1).map(num => (
                                                         <option key={num} value={num}>{num} {num === 1 ? 'Guest' : 'Guests'}</option>
                                                     ))}
                                                 </select>
