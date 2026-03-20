@@ -115,6 +115,16 @@ const LodgeDetail = () => {
             .catch(() => setDailyPriceMap({}));
     }, [lodge?._id, checkIn, checkOut]);
 
+    // Keep the context's selectedRoom in sync with latest dates/rooms/guests/prices
+    useEffect(() => {
+        if (selectedRoom) {
+            selectRoom({
+                ...selectedRoom,
+                _stayTotal: computeStayTotal(selectedRoom)
+            });
+        }
+    }, [checkIn, checkOut, dailyPriceMap, rooms, guests]);
+
     if (loading) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -248,15 +258,7 @@ const LodgeDetail = () => {
         return total;
     };
 
-    // Keep the context's selectedRoom in sync with latest dates/rooms/guests/prices
-    useEffect(() => {
-        if (selectedRoom) {
-            selectRoom({
-                ...selectedRoom,
-                _stayTotal: computeStayTotal(selectedRoom)
-            });
-        }
-    }, [checkIn, checkOut, dailyPriceMap, rooms, guests]);
+
 
     const handleBookNow = () => {
         if (hasBlockedDates) {
