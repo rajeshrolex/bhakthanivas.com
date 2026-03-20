@@ -114,8 +114,9 @@ const PriceCalendar = () => {
             const map = {};
             if (Array.isArray(pricesData)) {
                 pricesData.forEach(item => {
-                    if (!map[item.date]) map[item.date] = {};
-                    map[item.date][item.roomType] = { 
+                    const date = item.date.substring(0, 10);
+                    if (!map[date]) map[date] = {};
+                    map[date][item.roomType] = { 
                         _id: item._id, 
                         price: item.price,
                         isBlocked: item.isBlocked || false 
@@ -127,7 +128,8 @@ const PriceCalendar = () => {
             const blockMap = {};
             if (Array.isArray(blocksData)) {
                 blocksData.forEach(b => {
-                    blockMap[b.date] = { _id: b._id, reason: b.reason };
+                    const date = b.date.substring(0, 10);
+                    blockMap[date] = { _id: b._id, reason: b.reason };
                 });
             }
             setBlockedDates(blockMap);

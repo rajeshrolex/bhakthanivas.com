@@ -74,6 +74,11 @@ if ($method === 'GET') {
     }
 
     $whereClause = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+    $dates = $db->fetchAll(
+        "SELECT * FROM blocked_dates {$whereClause} ORDER BY date ASC",
+        $params
+    );
+
     $mapped = array_map(function($b) {
         return [
             '_id'     => $b['id'],
