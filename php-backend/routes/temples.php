@@ -18,7 +18,7 @@ $rawId  = $seg[2] ?? null;
 
 // ============================================================ GET /temples
 if ($method === 'GET' && $rawId === null) {
-    $temples = $db->fetchAll("SELECT * FROM temples ORDER BY created_at DESC");
+    $temples = $db->fetchAll("SELECT * FROM temples ORDER BY id DESC");
     
     $enriched = array_map(function($t) {
         return [

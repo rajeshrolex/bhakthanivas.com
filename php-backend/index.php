@@ -103,13 +103,12 @@ try {
             jsonError("Unknown API resource: /api/{$resource}", 404);
     }
 
-} catch (\PDOException $e) {
-    http_response_code(500);
-    header('Content-Type: application/json');
+    $message = $e->getMessage();
     echo json_encode([
         'success' => false,
         'error'   => 'Database error',
-        'message' => APP_ENV === 'development' ? $e->getMessage() : 'Internal server error',
+        'message' => (APP_ENV === 'development') ? $message : 'Internal server error',
+        'debug'   => (APP_ENV === 'development') ? $e->getFile() . ':' . $e->getLine() : null
     ]);
     exit;
 

@@ -29,12 +29,16 @@ define('DB_USER', $_ENV['DB_USER'] ?? $_SERVER['DB_USER'] ?? 'root');
 define('DB_PASS', $_ENV['DB_PASS'] ?? $_SERVER['DB_PASS'] ?? '');
 
 // --- App ---
-define('APP_ENV',  $_ENV['APP_ENV']  ?? $_SERVER['APP_ENV']  ?? 'production');
+$isLocal = in_array($_SERVER['REMOTE_ADDR'] ?? '', ['127.0.0.1', '::1']) || ($_SERVER['HTTP_HOST'] ?? '') === 'localhost';
+define('APP_ENV',  $_ENV['APP_ENV']  ?? $_SERVER['APP_ENV']  ?? ($isLocal ? 'development' : 'production'));
 define('BASE_URL', rtrim($_ENV['BASE_URL'] ?? $_SERVER['BASE_URL'] ?? 'http://localhost', '/'));
 
-// --- JWT ---
-define('JWT_SECRET', $_ENV['JWT_SECRET'] ?? $_SERVER['JWT_SECRET'] ?? 'bhakthanivas_secret_key_minimum_32_characters_long');
-define('JWT_EXPIRY', (int)($_ENV['JWT_EXPIRY'] ?? $_SERVER['JWT_EXPIRY'] ?? 86400));   // 24h default
+$jwtSecret = $_ENV['JWT_SECRET'] ?? $_SERVER['JWT_SECRET'] ?? '';
+if (strlen($jwtSecret) < 32) {
+    $jwtSecret = 'bhakthanivas_secret_key_minimum_32_characters_long_secure_2026';
+}
+define('JWT_SECRET', $jwtSecret);
+define('JWT_EXPIRY', (int)($_ENV['JWT_EXPIRY'] ?? $_SERVER['JWT_EXPIRY'] ?? 86400));
 
 // --- Razorpay ---
 define('RAZORPAY_KEY_ID',     $_ENV['RAZORPAY_KEY_ID']     ?? $_SERVER['RAZORPAY_KEY_ID']     ?? '');
