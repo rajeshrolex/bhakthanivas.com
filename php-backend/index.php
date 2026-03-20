@@ -110,7 +110,7 @@ try {
     echo json_encode([
         'success' => false,
         'error'   => 'Database error',
-        'message' => (defined('APP_ENV') && APP_ENV === 'development') ? $message : 'Internal server error',
+        'message' => $message,
         'debug'   => (defined('APP_ENV') && APP_ENV === 'development') ? $e->getFile() . ':' . $e->getLine() : null
     ]);
     exit;

@@ -42,7 +42,7 @@ const handleResponse = async (response) => {
         let errMsg = `HTTP ${response.status}`;
         try {
             const errData = await response.json();
-            errMsg = errData.error || errData.message || errMsg;
+            errMsg = errData.message || errData.error || errMsg;
         } catch (_) { /* ignore parse errors */ }
         throw new Error(errMsg);
     }
