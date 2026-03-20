@@ -15,17 +15,11 @@ $db  = Database::getInstance();
 
 echo "🌱 BhaktaNivas – Seeding Database...\n\n";
 
-// ================================================================ Super Admin
-echo "👤 Creating super_admin user...\n";
-
-$adminEmail = defined('ADMIN_EMAIL') && !empty(ADMIN_EMAIL) ? ADMIN_EMAIL : 'super@admin.com';
-$existing   = $db->fetchOne("SELECT id FROM users WHERE email = ?", [$adminEmail]);
-
 if (!$existing) {
     $db->query(
         "INSERT INTO users (name, email, password, phone, role) VALUES (?,?,?,?,?)",
         [
-            'Admin',
+            'Super Admin',
             $adminEmail,
             password_hash('admin@2026', PASSWORD_BCRYPT),
             '+91 9876543210',
@@ -35,6 +29,27 @@ if (!$existing) {
     echo "  ✅  Super admin created: {$adminEmail} / admin@2026\n";
 } else {
     echo "  ⏭️  Super admin already exists, skipping.\n";
+}
+
+// ================================================================ Dummy Admins
+echo "👥 Creating dummy lodge admins...\n";
+$dummyAdmins = [
+    ['name' => 'Rajesh Kumar', 'email' => 'rajesh@bhakthanivas.com', 'role' => 'admin'],
+    ['name' => 'Suresh Raina', 'email' => 'suresh@bhakthanivas.com', 'role' => 'admin'],
+    ['name' => 'Amit Shah',    'email' => 'amit@bhakthanivas.com',   'role' => 'admin'],
+];
+
+foreach ($dummyAdmins as $d) {
+    $exists = $db->fetchOne("SELECT id FROM users WHERE email = ?", [$d['email']]);
+    if (!$exists) {
+        $db->query(
+            "INSERT INTO users (name, email, password, role) VALUES (?,?,?,?)",
+            [$d['name'], $d['email'], password_hash('lodge@2026', PASSWORD_BCRYPT), $d['role']]
+        );
+        echo "  ✅  Admin created: {$d['email']} / lodge@2026\n";
+    } else {
+        echo "  ⏭️  Admin {$d['email']} already exists.\n";
+    }
 }
 
 // ================================================================ Lodges

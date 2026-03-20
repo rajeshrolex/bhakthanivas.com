@@ -410,12 +410,16 @@ export const blockedDatesAPI = {
 // ── Temple API ────────────────────────────────────────────────────────────────
 export const templeAPI = {
     getAll: async () => {
-        const response = await fetch(`${API_BASE_URL}/temples?t=${Date.now()}`);
+        const response = await fetch(`${API_BASE_URL}/temples?t=${Date.now()}`, {
+            headers: getAuthHeaders()
+        });
         return handleResponse(response);
     },
 
     getById: async (id) => {
-        const response = await fetch(`${API_BASE_URL}/temples/${id}?t=${Date.now()}`);
+        const response = await fetch(`${API_BASE_URL}/temples/${id}?t=${Date.now()}`, {
+            headers: getAuthHeaders()
+        });
         return handleResponse(response);
     },
 

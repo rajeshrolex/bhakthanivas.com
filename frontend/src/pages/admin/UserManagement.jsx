@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { lodgeAPI, API_BASE_URL } from '../../services/api';
+import { lodgeAPI, userAPI, API_BASE_URL } from '../../services/api';
 import { UserPlus, Trash2, Edit2, X, Loader2, Building2, Shield, ShieldCheck } from 'lucide-react';
 
 const UserManagement = () => {
@@ -26,15 +26,11 @@ const UserManagement = () => {
     const fetchData = async (showLoading = true) => {
         try {
             if (showLoading) setLoading(true);
-            // Add timestamp to prevent caching
             const [usersRes, lodgesData] = await Promise.all([
-                fetch(`${API_BASE_URL}/users?t=${new Date().getTime()}`).then(r => r.json()),
+                userAPI.getAll(),
                 lodgeAPI.getAll()
             ]);
-            console.log('Users loaded:', usersRes);
-            console.log('Lodges loaded:', lodgesData);
             setUsers(usersRes.users || []);
-            // Handle if lodges response is an object with lodges array
             setLodges(Array.isArray(lodgesData) ? lodgesData : (lodgesData?.lodges || []));
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -78,12 +74,6 @@ const UserManagement = () => {
         setSaving(true);
 
         try {
-            const url = editingUser
-                ? `${API_BASE_URL}/users/${editingUser._id}`
-                : `${API_BASE_URL}/users`;
-
-            const method = editingUser ? 'PUT' : 'POST';
-
             const payload = {
                 name: formData.name,
                 email: formData.email,
@@ -91,30 +81,20 @@ const UserManagement = () => {
                 lodgeId: formData.role === 'admin' ? formData.lodgeId : null
             };
 
-            // Only include password if it's provided (for new users or password update)
             if (formData.password) {
                 payload.password = formData.password;
             }
 
-            const response = await fetch(url, {
-                method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            const result = await response.json();
+            const result = editingUser
+                ? await userAPI.update(editingUser._id, payload)
+                : await userAPI.create(payload);
 
             if (result.success) {
-                // Optimistic update
                 if (editingUser) {
-                    // Update existing user in state
                     setUsers(users.map(u => u._id === editingUser._id ? result.user : u));
                 } else {
-                    // Add new user to state
                     setUsers([...users, result.user]);
                 }
-
-                // Also fetch fresh data to be sure (with cache busting)
                 fetchData(false);
                 setShowModal(false);
             } else {
@@ -122,7 +102,7 @@ const UserManagement = () => {
             }
         } catch (error) {
             console.error('Error saving user:', error);
-            alert('Error saving user');
+            alert(error.message || 'Error saving user');
         } finally {
             setSaving(false);
         }
@@ -132,11 +112,7 @@ const UserManagement = () => {
         if (!confirm('Are you sure you want to delete this user?')) return;
 
         try {
-            const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
-                method: 'DELETE'
-            });
-            const result = await response.json();
-
+            const result = await userAPI.delete(userId);
             if (result.success) {
                 setUsers(users.filter(u => u._id !== userId));
                 fetchData(false);
@@ -145,7 +121,7 @@ const UserManagement = () => {
             }
         } catch (error) {
             console.error('Error deleting user:', error);
-            alert('Error deleting user');
+            alert(error.message || 'Error deleting user');
         }
     };
 
