@@ -114,6 +114,7 @@ const PriceCalendar = () => {
             const map = {};
             if (Array.isArray(pricesData)) {
                 pricesData.forEach(item => {
+                    console.log('Price item:', item);
                     if (!map[item.date]) map[item.date] = {};
                     map[item.date][item.roomType] = { 
                         _id: item._id, 
@@ -121,6 +122,7 @@ const PriceCalendar = () => {
                         isBlocked: item.isBlocked || false 
                     };
                 });
+                console.log('Overrides map:', map);
             }
             setOverrides(map);
 
