@@ -18,7 +18,7 @@ $rawId  = $seg[2] ?? null;
 
 // ============================================================ GET /temples
 if ($method === 'GET' && $rawId === null) {
-    $temples = $db->fetchAll("SELECT * FROM temples ORDER BY name ASC");
+    $temples = $db->fetchAll("SELECT * FROM temples ORDER BY created_at DESC");
     
     $enriched = array_map(function($t) {
         return [
@@ -73,7 +73,7 @@ if ($method === 'GET' && $rawId !== null) {
 
 // ============================================================ POST /temples
 if ($method === 'POST') {
-    requireAuth(); // Adjust level if needed, e.g., requireSuperAdmin()
+    requireSuperAdmin();
     $body = getBody();
     
     if (empty($body['name'])) jsonError('Temple name is required');
@@ -106,7 +106,7 @@ if ($method === 'POST') {
 
 // ============================================================ PUT /temples/:id
 if ($method === 'PUT' && $rawId !== null) {
-    requireAuth();
+    requireSuperAdmin();
     $body = getBody();
     $id = (int)$rawId;
     
@@ -144,7 +144,7 @@ if ($method === 'PUT' && $rawId !== null) {
 
 // ============================================================ DELETE /temples/:id
 if ($method === 'DELETE' && $rawId !== null) {
-    requireAuth();
+    requireSuperAdmin();
     $id = (int)$rawId;
     
     $db->query("DELETE FROM temples WHERE id = ?", [$id]);

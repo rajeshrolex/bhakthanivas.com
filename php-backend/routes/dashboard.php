@@ -92,22 +92,56 @@ if ($method === 'GET' && $action === 'stats') {
         ];
     }, $recentBookings);
 
+    // Today's revenue (confirmed/checked-in/checked-out bookings created today)
+    $today = date('Y-m-d');
+    $todayRevenueRow = $db->fetchOne(
+        "SELECT COALESCE(SUM(total_amount), 0) AS today_revenue
+         FROM bookings
+         WHERE status IN ('confirmed','checked-in','checked-out')
+           AND DATE(created_at) = ?"
+        . ($lodgeFilter ? ' AND lodge_id = ?' : ''),
+        $lodgeFilter ? [$today, $lodgeFilter] : [$today]
+    );
+    $todayRevenue = (float)($todayRevenueRow['today_revenue'] ?? 0);
+
+    // Total available rooms (sum of available column, scoped to lodge)
+    $roomCountRow = $db->fetchOne(
+        "SELECT COALESCE(SUM(available), 0) AS total_rooms, COALESCE(SUM(total_rooms), 0) AS total_capacity
+         FROM rooms" . ($lodgeFilter ? ' WHERE lodge_id = ?' : ''),
+        $lodgeFilter ? [$lodgeFilter] : []
+    );
+    $totalAvailableRooms = (int)($roomCountRow['total_rooms'] ?? 0);
+
+    // Occupancy rate: confirmed+checked-in bookings / total_rooms * 100 (matches Node.js)
+    $confirmedBookingsRow = $db->fetchOne(
+        "SELECT COUNT(*) AS cnt FROM bookings
+         WHERE status IN ('confirmed','checked-in')"
+        . ($lodgeFilter ? ' AND lodge_id = ?' : ''),
+        $lodgeFilter ? [$lodgeFilter] : []
+    );
+    $confirmedCount  = (int)($confirmedBookingsRow['cnt'] ?? 0);
+    $occupancyRate   = $totalAvailableRooms > 0
+        ? (int)min(round(($confirmedCount / $totalAvailableRooms) * 100), 100)
+        : 0;
+
     jsonResponse([
-        'totalBookings'   => (int)$totals['total_bookings'],
-        'totalRevenue'    => (float)$totals['total_revenue'],
-        'confirmed'       => (int)$totals['confirmed'],
-        'checkedIn'       => (int)$totals['checked_in'],
-        'checkedOut'      => (int)$totals['checked_out'],
-        'cancelled'       => (int)$totals['cancelled'],
-        'pending'         => (int)$totals['pending'],
-        'upcomingCheckins'=> (int)$upcoming['upcoming'],
-        'todayCheckins'   => (int)$todayCheckins['today_checkins'],
-        'todayCheckouts'  => (int)$todayCheckouts['today_checkouts'],
-        'totalLodges'     => (int)$lodgeCount['total'],
-        'recentBookings'  => $enrichedRecent,
-        'todayRevenue'    => (float)$totals['total_revenue'], // Simplified for now
-        'pendingBookings' => (int)$totals['pending'],
-        'todayCheckIns'   => (int)$todayCheckins['today_checkins'],
+        'totalBookings'    => (int)$totals['total_bookings'],
+        'totalRevenue'     => (float)$totals['total_revenue'],
+        'totalLodges'      => (int)$lodgeCount['total'],
+        'totalRooms'       => $totalAvailableRooms,
+        'confirmed'        => (int)$totals['confirmed'],
+        'checkedIn'        => (int)$totals['checked_in'],
+        'checkedOut'       => (int)$totals['checked_out'],
+        'cancelled'        => (int)$totals['cancelled'],
+        'pending'          => (int)$totals['pending'],
+        'upcomingCheckins' => (int)$upcoming['upcoming'],
+        'todayCheckins'    => (int)$todayCheckins['today_checkins'],
+        'todayCheckouts'   => (int)$todayCheckouts['today_checkouts'],
+        'recentBookings'   => $enrichedRecent,
+        'todayRevenue'     => $todayRevenue,
+        'pendingBookings'  => (int)$totals['pending'],
+        'todayCheckIns'    => (int)$todayCheckins['today_checkins'],
+        'occupancyRate'    => $occupancyRate,
     ]);
 }
 

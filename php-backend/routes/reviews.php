@@ -2,9 +2,11 @@
 /**
  * routes/reviews.php – Review Routes
  *
- * GET    /api/reviews?lodgeId= – List reviews for a lodge (public)
- * POST   /api/reviews          – Submit a review (public)
- * DELETE /api/reviews/:id      – Delete a review (admin)
+ * GET    /api/reviews?lodgeId=&slug= – List reviews for a lodge (public)
+ * GET    /api/reviews/:slug          – List reviews for a lodge by slug (public)
+ * POST   /api/reviews/:slug          – Submit a review for a lodge by slug (public)
+ * POST   /api/reviews                – Submit a review with lodgeId (public)
+ * DELETE /api/reviews/:id            – Delete a review (admin)
  */
 
 declare(strict_types=1);
@@ -12,16 +14,42 @@ declare(strict_types=1);
 $db     = Database::getInstance();
 $method = $_SERVER['REQUEST_METHOD'];
 $seg    = getPathSegments();
-$id     = isset($seg[2]) && is_numeric($seg[2]) ? (int)$seg[2] : null;
+$idOrSlug = $seg[2] ?? null;
 
-// ============================================================== GET
+/**
+ * Resolve lodge by numeric ID or string slug.
+ * Returns lodge row or null.
+ */
+function getLodgeByIdOrSlug(Database $db, $value): ?array
+{
+    if ($value === null) return null;
+    if (is_numeric($value)) {
+        return $db->fetchOne("SELECT id, slug, name FROM lodges WHERE id = ?", [(int)$value]) ?: null;
+    }
+    return $db->fetchOne("SELECT id, slug, name FROM lodges WHERE slug = ?", [$value]) ?: null;
+}
+
+// ============================================================== GET /reviews  or  GET /reviews/:slug
 if ($method === 'GET') {
+    // Determine lodge from query param or URL slug
+    $lodge = null;
+
+    if ($idOrSlug !== null) {
+        // GET /api/reviews/:slug-or-id
+        $lodge = getLodgeByIdOrSlug($db, $idOrSlug);
+        if (!$lodge) jsonError('Lodge not found', 404);
+    } elseif (!empty($_GET['lodgeId'])) {
+        $lodge = getLodgeByIdOrSlug($db, $_GET['lodgeId']);
+    } elseif (!empty($_GET['slug'])) {
+        $lodge = getLodgeByIdOrSlug($db, $_GET['slug']);
+    }
+
     $where  = [];
     $params = [];
 
-    if (!empty($_GET['lodgeId'])) {
+    if ($lodge) {
         $where[]  = 'lodge_id = ?';
-        $params[] = (int)$_GET['lodgeId'];
+        $params[] = (int)$lodge['id'];
     }
 
     $whereClause = $where ? 'WHERE ' . implode(' AND ', $where) : '';
@@ -32,54 +60,72 @@ if ($method === 'GET') {
         $params
     );
 
+    // Enrich for frontend compat
+    foreach ($reviews as &$r) {
+        $r['_id']       = $r['id'];
+        $r['createdAt'] = $r['created_at'];
+        $r['lodge']     = $lodge ? $lodge['id'] : null;
+    }
+    unset($r);
+
     jsonResponse($reviews);
 }
 
-// ============================================================== POST
-if ($method === 'POST' && $id === null) {
+// ============================================================== POST /reviews/:slug  or  POST /reviews
+if ($method === 'POST' && !is_numeric($idOrSlug)) {
     $body = getBody();
 
-    $required = ['lodgeId', 'name', 'rating', 'comment'];
-    foreach ($required as $f) {
-        if (empty($body[$f]) && $body[$f] !== 0) {
-            jsonError("Field '{$f}' is required");
-        }
+    // Resolve lodge: from URL slug, or from body
+    if ($idOrSlug !== null) {
+        $lodge = getLodgeByIdOrSlug($db, $idOrSlug);
+    } elseif (!empty($body['lodgeId'])) {
+        $lodge = getLodgeByIdOrSlug($db, $body['lodgeId']);
+    } elseif (!empty($body['slug'])) {
+        $lodge = getLodgeByIdOrSlug($db, $body['slug']);
+    } else {
+        jsonError("lodgeId or lodge slug is required");
     }
 
-    $rating = (int)$body['rating'];
-    if ($rating < 1 || $rating > 5) {
+    if (!$lodge) jsonError('Lodge not found', 404);
+
+    $name    = trim($body['name']    ?? '');
+    $comment = trim($body['comment'] ?? '');
+    $rating  = (int)($body['rating'] ?? 0);
+
+    if (empty($name) || empty($comment) || $rating < 1) {
+        jsonError('name, rating (1-5) and comment are required');
+    }
+    if ($rating > 5) {
         jsonError('Rating must be between 1 and 5');
     }
 
-    $lodgeId = (int)$body['lodgeId'];
-
-    $lodge = $db->fetchOne("SELECT id FROM lodges WHERE id = ?", [$lodgeId]);
-    if (!$lodge) jsonError('Lodge not found', 404);
-
     $db->query(
         "INSERT INTO reviews (lodge_id, name, rating, comment) VALUES (?,?,?,?)",
-        [$lodgeId, trim($body['name']), $rating, trim($body['comment'])]
+        [(int)$lodge['id'], $name, $rating, $comment]
     );
 
     $newId  = $db->lastInsertId();
     $review = $db->fetchOne("SELECT * FROM reviews WHERE id = ?", [$newId]);
+    $review['_id']       = $review['id'];
+    $review['createdAt'] = $review['created_at'];
 
-    // Update lodge rating and review count
+    // Recalculate lodge rating and review count (matches Node.js behavior)
     $stats = $db->fetchOne(
         "SELECT COUNT(*) AS total, AVG(rating) AS avg_rating FROM reviews WHERE lodge_id = ?",
-        [$lodgeId]
+        [(int)$lodge['id']]
     );
     $db->query(
         "UPDATE lodges SET rating = ?, review_count = ? WHERE id = ?",
-        [round((float)$stats['avg_rating'], 1), (int)$stats['total'], $lodgeId]
+        [round((float)$stats['avg_rating'], 1), (int)$stats['total'], (int)$lodge['id']]
     );
 
     jsonResponse(['success' => true, 'review' => $review], 201);
 }
 
-// ============================================================== DELETE
-if ($method === 'DELETE' && $id !== null) {
+// ============================================================== DELETE /reviews/:id
+if ($method === 'DELETE' && $idOrSlug !== null && is_numeric($idOrSlug)) {
     requireAuth();
+    $id = (int)$idOrSlug;
 
     $review = $db->fetchOne("SELECT * FROM reviews WHERE id = ?", [$id]);
     if (!$review) jsonError('Review not found', 404);
@@ -88,7 +134,7 @@ if ($method === 'DELETE' && $id !== null) {
 
     $db->query("DELETE FROM reviews WHERE id = ?", [$id]);
 
-    // Recalculate lodge rating
+    // Recalculate lodge rating after deletion
     $stats = $db->fetchOne(
         "SELECT COUNT(*) AS total, COALESCE(AVG(rating), 0) AS avg_rating FROM reviews WHERE lodge_id = ?",
         [$lodgeId]

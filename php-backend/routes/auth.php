@@ -51,7 +51,14 @@ if ($method === 'POST' && $action === 'login') {
         [strtolower($email)]
     );
 
-    if (!$user || !password_verify($pass, $user['password'])) {
+    $isMatch = false;
+    if (str_starts_with($user['password'], '$2')) {
+        $isMatch = password_verify($pass, $user['password']);
+    } else {
+        $isMatch = ($pass === $user['password']);
+    }
+
+    if (!$isMatch) {
         jsonError('Invalid email or password', 401);
     }
 

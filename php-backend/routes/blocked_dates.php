@@ -1,10 +1,12 @@
 <?php
 /**
- * routes/blocked_dates.php – Blocked Dates Routes
+ * routes/blocked_dates.php – Blocked Dates Routes (Strict Node.js Parity)
  *
- * GET    /api/blocked-dates?lodgeId=  – List blocked dates
- * POST   /api/blocked-dates           – Block a date (admin)
- * DELETE /api/blocked-dates/:id       – Unblock a date (admin)
+ * GET    /api/blocked-dates/:lodgeId/month/:monthStr  – Get by month (regex equivalent)
+ * GET    /api/blocked-dates/:lodgeId                   – Get all by lodge
+ * GET    /api/blocked-dates?lodgeId=                   – List blocked dates
+ * POST   /api/blocked-dates                            – Block a date (super_admin)
+ * DELETE /api/blocked-dates/:id                        – Unblock a date (super_admin)
  */
 
 declare(strict_types=1);
@@ -12,13 +14,34 @@ declare(strict_types=1);
 $db     = Database::getInstance();
 $method = $_SERVER['REQUEST_METHOD'];
 $seg    = getPathSegments();
-$id     = isset($seg[2]) && is_numeric($seg[2]) ? (int)$seg[2] : null;
 
 // ============================================================== GET
 if ($method === 'GET') {
+    $lodgeId  = null;
+    $monthStr = null;
+
+    // Pattern: /api/blocked-dates/:lodgeId/month/:monthStr
+    if (isset($seg[2]) && is_numeric($seg[2]) && ($seg[3] ?? '') === 'month' && isset($seg[4])) {
+        $lodgeId  = (int)$seg[2];
+        $monthStr = $seg[4]; // YYYY-MM
+        
+        $blocks = $db->fetchAll(
+            "SELECT * FROM blocked_dates WHERE lodge_id = ? AND date LIKE ?",
+            [$lodgeId, "{$monthStr}%"]
+        );
+        jsonResponse($blocks);
+    }
+
+    // Pattern: /api/blocked-dates/:lodgeId
+    if (isset($seg[2]) && is_numeric($seg[2]) && !isset($seg[3])) {
+        $lodgeId = (int)$seg[2];
+        $blocks  = $db->fetchAll("SELECT * FROM blocked_dates WHERE lodge_id = ?", [$lodgeId]);
+        jsonResponse($blocks);
+    }
+
+    // Pattern: /api/blocked-dates?lodgeId=
     $where  = [];
     $params = [];
-
     if (!empty($_GET['lodgeId'])) {
         $where[]  = 'lodge_id = ?';
         $params[] = (int)$_GET['lodgeId'];
@@ -33,19 +56,16 @@ if ($method === 'GET') {
     }
 
     $whereClause = $where ? 'WHERE ' . implode(' AND ', $where) : '';
-
     $dates = $db->fetchAll(
         "SELECT * FROM blocked_dates {$whereClause} ORDER BY date ASC",
         $params
     );
-
     jsonResponse($dates);
 }
 
 // ============================================================== POST
-if ($method === 'POST' && $id === null) {
-    requireAuth();
-
+if ($method === 'POST' && !isset($seg[2])) {
+    requireSuperAdmin();
     $body = getBody();
 
     if (empty($body['lodgeId']) || empty($body['date'])) {
@@ -56,70 +76,74 @@ if ($method === 'POST' && $id === null) {
     $date    = $body['date'];
     $reason  = $body['reason'] ?? '';
 
-    // Prevent duplicate
+    // UPSERT LOGIC (matches Node.js BlockedDate.js findOne + save)
     $existing = $db->fetchOne(
         "SELECT id FROM blocked_dates WHERE lodge_id = ? AND date = ?",
         [$lodgeId, $date]
     );
 
     if ($existing) {
-        jsonError('This date is already blocked for the lodge', 409);
+        $db->query(
+            "UPDATE blocked_dates SET reason = ? WHERE id = ?",
+            [$reason, $existing['id']]
+        );
+        $id = $existing['id'];
+    } else {
+        $db->query(
+            "INSERT INTO blocked_dates (lodge_id, date, reason) VALUES (?,?,?)",
+            [$lodgeId, $date, $reason]
+        );
+        $id = $db->lastInsertId();
     }
 
-    $db->query(
-        "INSERT INTO blocked_dates (lodge_id, date, reason) VALUES (?,?,?)",
-        [$lodgeId, $date, $reason]
-    );
-
-    $row = $db->fetchOne("SELECT * FROM blocked_dates WHERE id = ?", [$db->lastInsertId()]);
-
-    jsonResponse(['success' => true, 'blockedDate' => $row], 201);
+    $row = $db->fetchOne("SELECT * FROM blocked_dates WHERE id = ?", [$id]);
+    jsonResponse($row, $existing ? 200 : 201);
 }
 
 // ============================================================== POST bulk
 if ($method === 'POST' && ($seg[2] ?? '') === 'bulk') {
-    requireAuth();
-
+    requireSuperAdmin();
     $body  = getBody();
-    $dates = $body['dates'] ?? [];  // [{lodgeId, date, reason}]
+    $dates = $body['dates'] ?? [];
 
     if (!is_array($dates) || empty($dates)) {
         jsonError('dates array is required');
     }
 
-    $added   = 0;
-    $skipped = 0;
-
+    $processed = 0;
     foreach ($dates as $entry) {
-        if (empty($entry['lodgeId']) || empty($entry['date'])) { $skipped++; continue; }
+        if (empty($entry['lodgeId']) || empty($entry['date'])) continue;
 
-        $exists = $db->fetchOne(
+        $lId = (int)$entry['lodgeId'];
+        $dt  = $entry['date'];
+        $re  = $entry['reason'] ?? '';
+
+        $existing = $db->fetchOne(
             "SELECT id FROM blocked_dates WHERE lodge_id = ? AND date = ?",
-            [(int)$entry['lodgeId'], $entry['date']]
+            [$lId, $dt]
         );
 
-        if ($exists) { $skipped++; continue; }
-
-        $db->query(
-            "INSERT INTO blocked_dates (lodge_id, date, reason) VALUES (?,?,?)",
-            [(int)$entry['lodgeId'], $entry['date'], $entry['reason'] ?? '']
-        );
-        $added++;
+        if ($existing) {
+            $db->query("UPDATE blocked_dates SET reason = ? WHERE id = ?", [$re, $existing['id']]);
+        } else {
+            $db->query("INSERT INTO blocked_dates (lodge_id, date, reason) VALUES (?,?,?)", [$lId, $dt, $re]);
+        }
+        $processed++;
     }
 
-    jsonResponse(['success' => true, 'added' => $added, 'skipped' => $skipped]);
+    jsonResponse(['success' => true, 'processed' => $processed]);
 }
 
 // ============================================================== DELETE
-if ($method === 'DELETE' && $id !== null) {
-    requireAuth();
+if ($method === 'DELETE' && isset($seg[2]) && is_numeric($seg[2])) {
+    requireSuperAdmin();
+    $id = (int)$seg[2];
 
     $row = $db->fetchOne("SELECT id FROM blocked_dates WHERE id = ?", [$id]);
     if (!$row) jsonError('Blocked date not found', 404);
 
     $db->query("DELETE FROM blocked_dates WHERE id = ?", [$id]);
-
     jsonResponse(['success' => true, 'message' => 'Date unblocked successfully']);
 }
 
-jsonError("BlockedDate route not found: {$method}", 404);
+jsonError("BlockedDate route not found", 404);

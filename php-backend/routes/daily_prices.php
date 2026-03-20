@@ -48,7 +48,7 @@ if ($method === 'GET') {
 
 // ============================================================== POST (upsert)
 if ($method === 'POST' && $id === null) {
-    requireAuth();
+    requireSuperAdmin();
 
     $body = getBody();
 
@@ -93,7 +93,7 @@ if ($method === 'POST' && $id === null) {
 // ============================================================== POST bulk-upsert
 // POST /api/daily-prices/bulk
 if ($method === 'POST' && ($seg[2] ?? '') === 'bulk') {
-    requireAuth();
+    requireSuperAdmin();
 
     $body    = getBody();
     $entries = $body['entries'] ?? [];
@@ -136,7 +136,7 @@ if ($method === 'POST' && ($seg[2] ?? '') === 'bulk') {
 
 // ============================================================== DELETE
 if ($method === 'DELETE' && $id !== null) {
-    requireAuth();
+    requireSuperAdmin();
 
     $row = $db->fetchOne("SELECT id FROM daily_prices WHERE id = ?", [$id]);
     if (!$row) jsonError('Price entry not found', 404);

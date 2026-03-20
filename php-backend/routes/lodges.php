@@ -31,6 +31,7 @@ function enrichLodge(array $lodge, Database $db): array
     $lodge['amenities']    = json_decode($lodge['amenities'] ?? '[]', true) ?? [];
     $lodge['images']       = json_decode($lodge['images']    ?? '[]', true) ?? [];
     $lodge['isBlocked']    = (bool)($lodge['is_blocked'] ?? false);
+    $lodge['isFeatured']   = (bool)($lodge['featured']   ?? false);
 
     // Fetch blocked dates
     $dates = $db->fetchAll("SELECT date FROM blocked_dates WHERE lodge_id = ?", [$lodge['id']]);
@@ -76,6 +77,65 @@ if ($method === 'GET' && $idOrSlug !== null && !isset($seg[3])) {
     }
 
     $lodge = enrichLodge($lodge, $db);
+
+    // --- Dynamic availability based on date range (mirrors Node.js lodgeRoutes.js) ---
+    $checkIn  = $_GET['checkIn']  ?? null;
+    $checkOut = $_GET['checkOut'] ?? null;
+
+    if ($checkIn && $checkOut) {
+        $ciDate = new \DateTime($checkIn  . ' 00:00:00');
+        $coDate = new \DateTime($checkOut . ' 00:00:00');
+
+        if ($ciDate < $coDate) {
+            // Fetch all overlapping bookings: checkIn < coDate AND checkOut > ciDate
+            $overlapping = $db->fetchAll(
+                "SELECT room_name, rooms, check_in, check_out
+                 FROM bookings
+                 WHERE lodge_id = ?
+                   AND status NOT IN ('cancelled','checked-out')
+                   AND check_in < ? AND check_out > ?",
+                [(int)$lodge['id'], $checkOut, $checkIn]
+            );
+
+            // Build each night in the requested stay [checkIn, checkOut)
+            $nights = [];
+            $cur    = clone $ciDate;
+            while ($cur < $coDate) {
+                $nights[] = $cur->format('Y-m-d');
+                $cur->modify('+1 day');
+            }
+
+            // For each room name, find the PEAK occupancy across all nights
+            $peakOccupancyByName = [];
+            foreach ($nights as $nightStr) {
+                $nightDate = new \DateTime($nightStr . ' 00:00:00');
+                $nightCountByName = [];
+                foreach ($overlapping as $bk) {
+                    $bkIn  = new \DateTime(substr($bk['check_in'],  0, 10) . ' 00:00:00');
+                    $bkOut = new \DateTime(substr($bk['check_out'], 0, 10) . ' 00:00:00');
+                    // booking covers this night if checkIn <= night < checkOut
+                    if ($bkIn <= $nightDate && $nightDate < $bkOut && !empty($bk['room_name'])) {
+                        $cnt = (int)($bk['rooms'] ?? 1);
+                        $nightCountByName[$bk['room_name']] = ($nightCountByName[$bk['room_name']] ?? 0) + $cnt;
+                    }
+                }
+                // Update peak for each room name
+                foreach ($nightCountByName as $rname => $cnt) {
+                    $peakOccupancyByName[$rname] = max($peakOccupancyByName[$rname] ?? 0, $cnt);
+                }
+            }
+
+            // Overwrite available field on each room with dynamic count
+            $lodge['rooms'] = array_map(function ($room) use ($peakOccupancyByName) {
+                $baseCapacity    = (int)($room['available'] ?? 0);
+                $peakBooked      = (int)($peakOccupancyByName[$room['name']] ?? 0);
+                $dynamicAvailable = max(0, $baseCapacity - $peakBooked);
+                $room['available'] = $dynamicAvailable;
+                return $room;
+            }, $lodge['rooms']);
+        }
+    }
+
     jsonResponse($lodge);
 }
 
@@ -125,7 +185,7 @@ if ($method === 'POST' && $id === null) {
             $body['whatsapp']     ?? '',
             $body['description']  ?? '',
             isset($body['isBlocked']) && $body['isBlocked'] ? 1 : 0,
-            $body['terms']        ?? "1. Check-in: 12:00 PM, Check-out: 11:00 AM.\n2. Please carry a valid ID proof.\n3. Standard cancellation policies apply.",
+            $body['terms']        ?? "1. Check-in: 12:00 PM, Check-out: 11:00 AM.\n2. Please carry a valid ID proof (Aadhar/Passport/DL).\n3. Standard cancellation policies apply.",
         ]
     );
 
@@ -193,7 +253,7 @@ if ($method === 'PUT' && $id !== null) {
 
 // =================================================== PATCH /lodges/:id/block-toggle
 if ($method === 'PATCH' && $id !== null && isset($seg[3]) && $seg[3] === 'block-toggle') {
-    requireAuth();
+    requireSuperAdmin();
 
     $lodge = $db->fetchOne("SELECT id, is_blocked FROM lodges WHERE id = ?", [$id]);
     if (!$lodge) {

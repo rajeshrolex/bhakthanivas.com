@@ -2,18 +2,21 @@
 /**
  * routes/bookings.php – Booking Routes
  *
- * GET    /api/bookings                   – List bookings (admin)
- * GET    /api/bookings/:bookingId        – Single booking (public, by bookingId string)
- * POST   /api/bookings                   – Create booking
- * PUT    /api/bookings/:id/status        – Update status (admin)
- * PUT    /api/bookings/:id/payment       – Mark paid (admin)
- * DELETE /api/bookings/:id              – Cancel booking
- * GET    /api/bookings/:bookingId/invoice – PDF invoice stub
+ * GET    /api/bookings                    – List bookings (admin, with optional filters)
+ * GET    /api/bookings/:bookingId         – Single booking (by bookingId string)
+ * GET    /api/bookings/:bookingId/invoice – Download PDF invoice
+ * POST   /api/bookings                    – Create booking (with validation, email, WhatsApp)
+ * PUT    /api/bookings/:id/status         – Update status (admin)
+ * PUT    /api/bookings/:id/payment        – Mark paid (admin)
+ * DELETE /api/bookings/:id               – Cancel booking
  */
 
 declare(strict_types=1);
 
 require_once __DIR__ . '/../utils/EmailService.php';
+require_once __DIR__ . '/../utils/WhatsappService.php';
+require_once __DIR__ . '/../utils/TimeUtils.php';
+require_once __DIR__ . '/../utils/InvoiceService.php';
 
 $db     = Database::getInstance();
 $method = $_SERVER['REQUEST_METHOD'];
@@ -23,6 +26,7 @@ $rawId  = $seg[2] ?? null;
 $subact = $seg[3] ?? null;  // 'status', 'payment', 'invoice'
 
 // ============================================================ Helpers
+
 function enrichBooking(array $b): array
 {
     $b['_id']           = $b['id'];
@@ -30,12 +34,23 @@ function enrichBooking(array $b): array
     $b['lodgeId']       = $b['lodge_id'];
     $b['roomId']        = $b['room_id'];
     $b['lodgeName']     = $b['lodge_name'];
+    $b['roomType']      = $b['room_type']  ?? '';
+    $b['roomName']      = $b['room_name']  ?? '';
+    $b['roomPrice']     = (float)($b['room_price'] ?? 0);
     $b['checkIn']       = $b['check_in'];
     $b['checkOut']      = $b['check_out'];
-    $b['checkInTime']   = $b['check_in_time'];
+    $b['checkInTime']   = $b['check_in_time'] ?? '12:00';
     $b['totalAmount']   = (float)$b['total_amount'];
     $b['amountPaid']    = (float)$b['amount_paid'];
     $b['balanceAmount'] = (float)$b['balance_amount'];
+    $b['paymentMethod'] = $b['payment_method'] ?? '';
+    $b['paymentStatus'] = $b['payment_status'] ?? 'pending';
+    $b['paymentId']     = $b['payment_id']     ?? null;
+    $b['customerName']  = $b['customer_name']  ?? '';
+    $b['customerMobile']= $b['customer_mobile'] ?? '';
+    $b['customerEmail'] = $b['customer_email'] ?? '';
+    $b['idType']        = $b['id_type']   ?? '';
+    $b['idNumber']      = $b['id_number'] ?? '';
     $b['createdAt']     = $b['created_at'];
 
     // Rebuild nested objects to mirror Node.js API shape
@@ -54,15 +69,28 @@ function enrichBooking(array $b): array
         'idNumber' => $b['id_number'],
     ];
 
-    // Keep snake_case for now to avoid breaking other things, but provide camelCase too
-    // Unset internal database fields that shouldn't be in the flat API response if any
-    
     return $b;
 }
 
+/**
+ * Matches Node.js: 'MLY' + last-8-digits of timestamp + 4-char random uppercase
+ */
 function generateBookingId(): string
 {
-    return 'BH-' . strtoupper(substr(md5(uniqid((string)mt_rand(), true)), 0, 8));
+    $ts  = (string)(int)(microtime(true) * 1000);
+    $ts8 = substr($ts, -8);
+    $rand = strtoupper(substr(bin2hex(random_bytes(4)), 0, 4));
+    return 'MLY' . $ts8 . $rand;
+}
+
+/**
+ * Format a YYYY-MM-DD date to DD-MM-YYYY (matches Node.js formatDate)
+ */
+function formatDate(string $date): string
+{
+    if (!$date) return 'N/A';
+    $d = \DateTime::createFromFormat('Y-m-d', $date) ?: \DateTime::createFromFormat('Y-m-d H:i:s', $date);
+    return $d ? $d->format('d-m-Y') : $date;
 }
 
 // ============================================================ GET /bookings
@@ -72,11 +100,11 @@ if ($method === 'GET' && $rawId === null) {
     $where  = [];
     $params = [];
 
-    if (!empty($_GET['lodgeId'])) {
+    if (!empty($_GET['lodgeId']) && $_GET['lodgeId'] !== 'undefined' && $_GET['lodgeId'] !== 'null') {
         $where[]  = 'b.lodge_id = ?';
         $params[] = (int)$_GET['lodgeId'];
     }
-    if (!empty($_GET['status'])) {
+    if (!empty($_GET['status']) && $_GET['status'] !== 'all') {
         $where[]  = 'b.status = ?';
         $params[] = $_GET['status'];
     }
@@ -95,7 +123,6 @@ if ($method === 'GET' && $rawId === null) {
     }
 
     $whereClause = $where ? 'WHERE ' . implode(' AND ', $where) : '';
-
     $limit  = min((int)($_GET['limit'] ?? 100), 500);
     $offset = (int)($_GET['page'] ?? 0) * $limit;
 
@@ -104,9 +131,7 @@ if ($method === 'GET' && $rawId === null) {
         $params
     );
 
-    $bookings = array_map('enrichBooking', $rows);
-
-    jsonResponse($bookings);
+    jsonResponse(array_map('enrichBooking', $rows));
 }
 
 // =========================================================== GET /bookings/:id  or /bookings/:id/invoice
@@ -116,7 +141,7 @@ if ($method === 'GET' && $rawId !== null) {
     if ($subact === 'invoice') {
         $booking = $db->fetchOne(
             "SELECT b.*, l.name AS lodge_full_name, l.address AS lodge_address,
-                    l.phone AS lodge_phone
+                    l.phone AS lodge_phone, l.terms AS lodge_terms
              FROM bookings b
              LEFT JOIN lodges l ON l.id = b.lodge_id
              WHERE b.booking_id = ? OR b.id = ?",
@@ -124,15 +149,56 @@ if ($method === 'GET' && $rawId !== null) {
         );
 
         if (!$booking) jsonError('Booking not found', 404);
-
-        // Return JSON invoice data (frontend generates PDF via jsPDF/invoiceService.js)
         $booking = enrichBooking($booking);
-        jsonResponse($booking);
+
+        // Compute 23-hour checkout time
+        $checkoutResult = TimeUtils::calculateCheckOutTime(
+            $booking['check_in'],
+            $booking['checkInTime'],
+            $booking['check_out']
+        );
+
+        $bookingDetails = [
+            'bookingId'     => $booking['bookingId'],
+            'bookingDate'   => formatDate($booking['createdAt']),
+            'lodgeName'     => $booking['lodgeName'],
+            'roomName'      => $booking['roomName'],
+            'roomType'      => $booking['roomType'],
+            'guestName'     => $booking['customerName'],
+            'email'         => $booking['customerEmail'],
+            'phone'         => $booking['customerMobile'],
+            'checkIn'       => formatDate($booking['checkIn']),
+            'checkOut'      => formatDate($booking['checkOut']),
+            'checkInTime'   => TimeUtils::formatTo12Hour($booking['checkInTime'] ?? '12:00'),
+            'checkOutTime'  => $checkoutResult['checkOutTime12'],
+            'guests'        => $booking['guests'],
+            'amount'        => $booking['totalAmount'],
+            'amountPaid'    => $booking['amountPaid'],
+            'balanceAmount' => $booking['balanceAmount'],
+            'paymentMethod' => $booking['paymentMethod'],
+            'paymentStatus' => $booking['paymentStatus'],
+            'paymentId'     => $booking['paymentId'],
+            'terms'         => $booking['lodge_terms'] ?? '',
+        ];
+
+        try {
+            $pdf = InvoiceService::generate($bookingDetails);
+            header('Content-Type: application/pdf');
+            header('Content-Disposition: attachment; filename="Invoice-' . $booking['bookingId'] . '.pdf"');
+            header('Content-Length: ' . strlen($pdf));
+            echo $pdf;
+            exit;
+        } catch (\Throwable $e) {
+            error_log('Invoice generation error: ' . $e->getMessage());
+            jsonError('Failed to generate invoice', 500);
+        }
     }
 
     // ---- Single booking ----
     $booking = $db->fetchOne(
-        "SELECT b.*, l.name AS lodge_full_name FROM bookings b
+        "SELECT b.*, l.name AS lodge_full_name, l.terms AS lodge_terms,
+                l.phone AS lodge_phone, l.whatsapp AS lodge_whatsapp
+         FROM bookings b
          LEFT JOIN lodges l ON l.id = b.lodge_id
          WHERE b.booking_id = ? OR b.id = ?",
         [$rawId, is_numeric($rawId) ? (int)$rawId : 0]
@@ -149,24 +215,51 @@ if ($method === 'GET' && $rawId !== null) {
 if ($method === 'POST' && $rawId === null) {
     $body = getBody();
 
-    $required = ['lodgeId','roomId','checkIn','checkOut','customerName','customerMobile','guests','rooms','totalAmount','paymentMethod'];
+    // Required fields validation
+    $required = ['lodgeId', 'checkIn', 'checkOut', 'guests', 'rooms', 'totalAmount', 'paymentMethod'];
     foreach ($required as $f) {
         if (!isset($body[$f]) || $body[$f] === '') {
             jsonError("Field '{$f}' is required");
         }
     }
 
-    $lodgeId    = (int)$body['lodgeId'];
-    $roomId     = (int)$body['roomId'];
-    $checkIn    = $body['checkIn'];
-    $checkOut   = $body['checkOut'];
-    $numRooms   = (int)$body['rooms'];
+    // Customer details
+    $customerName   = $body['customerDetails']['name']   ?? ($body['customerName']   ?? '');
+    $customerMobile = $body['customerDetails']['mobile'] ?? ($body['customerMobile'] ?? '');
+    $customerEmail  = $body['customerDetails']['email']  ?? ($body['customerEmail']  ?? '');
+    $idType         = $body['customerDetails']['idType'] ?? ($body['idType']  ?? '');
+    $idNumber       = $body['customerDetails']['idNumber']?? ($body['idNumber'] ?? '');
 
-    // ---- Availability check ----
-    $room = $db->fetchOne("SELECT * FROM rooms WHERE id = ? AND lodge_id = ?", [$roomId, $lodgeId]);
-    if (!$room) jsonError('Room not found in this lodge', 404);
+    if (empty($customerName) || empty($customerMobile)) {
+        jsonError('customerDetails.name and customerDetails.mobile are required');
+    }
 
-    // Count overlapping bookings for this room
+    $lodgeId  = (int)$body['lodgeId'];
+    $checkIn  = $body['checkIn'];
+    $checkOut = $body['checkOut'];
+    $numRooms = (int)$body['rooms'];
+
+    // --- Resolve room (supports both roomId and nested room object) ---
+    $roomId   = null;
+    $roomRow  = null;
+
+    if (!empty($body['roomId'])) {
+        $roomId  = (int)$body['roomId'];
+        $roomRow = $db->fetchOne("SELECT * FROM rooms WHERE id = ? AND lodge_id = ?", [$roomId, $lodgeId]);
+    } elseif (!empty($body['room']['name'])) {
+        $roomRow = $db->fetchOne(
+            "SELECT * FROM rooms WHERE lodge_id = ? AND name = ?",
+            [$lodgeId, $body['room']['name']]
+        );
+        if ($roomRow) $roomId = (int)$roomRow['id'];
+    }
+
+    if (!$roomRow) {
+        jsonError('Room not found in this lodge', 404);
+    }
+
+    // ---- Availability check (peak-night model matching Node.js) ----
+    // Count peak concurrent bookings for this room across all nights of the stay
     $overlapping = $db->fetchOne(
         "SELECT COALESCE(SUM(rooms), 0) AS booked
          FROM bookings
@@ -176,14 +269,31 @@ if ($method === 'POST' && $rawId === null) {
         [$roomId, $checkOut, $checkIn]
     );
 
-    $totalRooms = (int)$room['total_rooms'];
+    $totalRooms = (int)$roomRow['total_rooms'];
     $booked     = (int)($overlapping['booked'] ?? 0);
 
     if (($booked + $numRooms) > $totalRooms) {
-        jsonError("Not enough rooms available. Available: " . ($totalRooms - $booked) . ", Requested: {$numRooms}", 409);
+        jsonError(
+            "Not enough rooms available. Available: " . ($totalRooms - $booked) . ", Requested: {$numRooms}",
+            409
+        );
     }
 
-    // ---- Check blocked dates ----
+    // ---- Check blocked dates for this room type ----
+    if (!empty($roomRow['type'])) {
+        $blockedPrice = $db->fetchOne(
+            "SELECT id FROM daily_prices
+             WHERE lodge_id = ? AND room_type = ? AND is_blocked = 1
+               AND date >= ? AND date < ?
+             LIMIT 1",
+            [$lodgeId, $roomRow['type'], $checkIn, $checkOut]
+        );
+        if ($blockedPrice) {
+            jsonError("The selected room type ({$roomRow['type']}) is unavailable on one or more of your selected dates.", 409);
+        }
+    }
+
+    // ---- Check lodge-level blocked dates ----
     $blocked = $db->fetchOne(
         "SELECT id FROM blocked_dates
          WHERE lodge_id = ?
@@ -193,18 +303,50 @@ if ($method === 'POST' && $rawId === null) {
     );
     if ($blocked) jsonError('Selected dates are blocked for this lodge', 409);
 
-    // ---- Generate unique booking ID ----
+    // ---- Normalize payment method ('upi' -> 'online') ----
+    $paymentMethod = $body['paymentMethod'];
+    if ($paymentMethod === 'upi') {
+        $paymentMethod = 'online';
+    }
+
+    // ---- Determine payment status ----
+    $paymentStatus = 'pending';
+    $paymentDetails = $body['paymentDetails'] ?? [];
+
+    if ($paymentMethod === 'online' && ($paymentDetails['status'] ?? '') === 'paid') {
+        $paymentStatus = 'paid';
+    } elseif ($paymentMethod === 'payAtLodge') {
+        $paymentStatus = 'pending';
+    } else {
+        $paymentStatus = $body['paymentStatus'] ?? ($paymentDetails['status'] ?? 'pending');
+    }
+
+    // ---- Calculate paid/balance amounts ----
+    $totalAmount  = (float)$body['totalAmount'];
+    $amountPaid   = 0.0;
+    $balanceAmount = $totalAmount;
+
+    if (isset($body['amountPaid']) && $body['amountPaid'] !== null) {
+        $amountPaid    = (float)$body['amountPaid'];
+        $balanceAmount = isset($body['balanceAmount']) ? (float)$body['balanceAmount'] : ($totalAmount - $amountPaid);
+    } elseif ($paymentStatus === 'paid') {
+        $amountPaid    = $totalAmount;
+        $balanceAmount = 0.0;
+    } elseif ($paymentMethod === 'payAtLodge') {
+        $amountPaid    = 0.0;
+        $balanceAmount = $totalAmount;
+    }
+
+    $checkInTime = $body['checkInTime'] ?? '12:00';
+    $paymentId   = $paymentDetails['paymentId'] ?? ($body['paymentId'] ?? null);
+
+    // ---- Generate unique booking ID (matches Node.js MLY prefix) ----
     $bookingId = generateBookingId();
     while ($db->fetchOne("SELECT id FROM bookings WHERE booking_id = ?", [$bookingId])) {
         $bookingId = generateBookingId();
     }
 
     $lodge = $db->fetchOne("SELECT * FROM lodges WHERE id = ?", [$lodgeId]);
-
-    $totalAmount  = (float)$body['totalAmount'];
-    $amountPaid   = (float)($body['amountPaid']   ?? 0);
-    $balanceAmount= (float)($body['balanceAmount'] ?? $totalAmount);
-    $checkInTime  = $body['checkInTime'] ?? '12:00';
 
     $db->query(
         "INSERT INTO bookings
@@ -219,22 +361,22 @@ if ($method === 'POST' && $rawId === null) {
             $lodgeId,
             $lodge['name'] ?? '',
             $roomId,
-            $room['type'],
-            $room['name'],
-            (float)$room['price'],
+            $roomRow['type'],
+            $roomRow['name'],
+            (float)$roomRow['price'],
             $checkIn,
             $checkOut,
             $checkInTime,
             (int)$body['guests'],
             $numRooms,
-            $body['customerName'],
-            $body['customerMobile'],
-            $body['customerEmail'] ?? '',
-            $body['idType']        ?? '',
-            $body['idNumber']      ?? '',
-            $body['paymentMethod'],
-            $body['paymentId']     ?? null,
-            $body['paymentStatus'] ?? 'pending',
+            $customerName,
+            $customerMobile,
+            $customerEmail,
+            $idType,
+            $idNumber,
+            $paymentMethod,
+            $paymentId,
+            $paymentStatus,
             $totalAmount,
             $amountPaid,
             $balanceAmount,
@@ -245,27 +387,31 @@ if ($method === 'POST' && $rawId === null) {
     $newId   = $db->lastInsertId();
     $booking = $db->fetchOne("SELECT * FROM bookings WHERE id = ?", [$newId]);
 
+    // Compute checkout time using 23-hour rule
+    $checkoutResult = TimeUtils::calculateCheckOutTime($checkIn, $checkInTime, $checkOut);
+
     // ---- Send emails ----
-    if (!empty($body['customerEmail'])) {
+    if (!empty($customerEmail)) {
         $emailDetails = [
             'bookingId'       => $bookingId,
-            'guestName'       => $body['customerName'],
-            'email'           => $body['customerEmail'],
-            'phone'           => $body['customerMobile'],
+            'guestName'       => $customerName,
+            'email'           => $customerEmail,
+            'phone'           => $customerMobile,
             'lodgeName'       => $lodge['name'] ?? '',
             'lodgePhone'      => $lodge['phone'] ?? '',
-            'lodgeWhatsapp'   => $lodge['whatsapp'] ?? '',
-            'roomName'        => $room['name'],
-            'checkIn'         => $checkIn,
-            'checkOut'        => $checkOut,
+            'lodgeWhatsapp'   => $lodge['whatsapp'] ?? $lodge['phone'] ?? '',
+            'roomName'        => $roomRow['name'],
+            'checkIn'         => formatDate($checkIn),
+            'checkOut'        => formatDate($checkOut),
             'checkInTime'     => $checkInTime,
-            'checkOutTime'    => '11:00 AM',
+            'checkOutTime'    => $checkoutResult['checkOutTime12'],
             'guests'          => $body['guests'],
             'amount'          => $totalAmount,
             'amountPaid'      => $amountPaid,
             'balanceAmount'   => $balanceAmount,
-            'paymentId'       => $body['paymentId'] ?? '',
-            'paymentMethod'   => $body['paymentMethod'],
+            'paymentId'       => $paymentId ?? '',
+            'paymentMethod'   => $paymentMethod,
+            'paymentStatus'   => $paymentStatus,
             'terms'           => $lodge['terms'] ?? '',
             'baseUrl'         => BASE_URL,
             'lodgeAdminEmail' => ADMIN_EMAIL,
@@ -274,6 +420,17 @@ if ($method === 'POST' && $rawId === null) {
         $emailService = new EmailService();
         $emailService->sendBookingEmails($emailDetails);
     }
+
+    // ---- Send WhatsApp notification ----
+    $waSvc = new WhatsappService();
+    $waSvc->sendBookingNotification([
+        'bookingId'     => $bookingId,
+        'lodgeName'     => $lodge['name'] ?? '',
+        'guestName'     => $customerName,
+        'phone'         => $customerMobile,
+        'amountPaid'    => $amountPaid,
+        'balanceAmount' => $balanceAmount,
+    ]);
 
     jsonResponse(enrichBooking($booking), 201);
 }
@@ -285,9 +442,9 @@ if ($method === 'PUT' && $rawId !== null && $subact === 'status') {
     $body   = getBody();
     $status = $body['status'] ?? '';
 
-    $validStatuses = ['pending','confirmed','checked-in','checked-out','cancelled'];
+    $validStatuses = ['pending', 'confirmed', 'checked-in', 'checked-out', 'cancelled'];
     if (!in_array($status, $validStatuses, true)) {
-        jsonError('Invalid status: ' . implode(', ', $validStatuses));
+        jsonError('Invalid status. Must be: ' . implode(', ', $validStatuses));
     }
 
     $booking = $db->fetchOne(
@@ -313,14 +470,21 @@ if ($method === 'PUT' && $rawId !== null && $subact === 'payment') {
     );
     if (!$booking) jsonError('Booking not found', 404);
 
-    $amountPaid    = (float)($body['amountPaid']    ?? $booking['total_amount']);
-    $balanceAmount = (float)($body['balanceAmount'] ?? 0);
-    $paymentId     = $body['paymentId']     ?? $booking['payment_id'];
     $paymentStatus = $body['paymentStatus'] ?? 'paid';
+    $paymentMethod = $body['paymentMethod'] ?? $booking['payment_method'];
+    $amountPaid    = (float)($body['amountPaid']    ?? $booking['total_amount']);
+    $balanceAmount = (float)($body['balanceAmount'] ?? 0.0);
+
+    // Generate cash payment ID if marking paid with no ID (matches Node.js)
+    if ($paymentStatus === 'paid' && empty($body['paymentId'])) {
+        $paymentId = 'CASH_' . time();
+    } else {
+        $paymentId = $body['paymentId'] ?? $booking['payment_id'];
+    }
 
     $db->query(
-        "UPDATE bookings SET amount_paid = ?, balance_amount = ?, payment_id = ?, payment_status = ? WHERE id = ?",
-        [$amountPaid, $balanceAmount, $paymentId, $paymentStatus, $booking['id']]
+        "UPDATE bookings SET amount_paid = ?, balance_amount = ?, payment_id = ?, payment_status = ?, payment_method = ? WHERE id = ?",
+        [$amountPaid, $balanceAmount, $paymentId, $paymentStatus, $paymentMethod, $booking['id']]
     );
 
     $updated = $db->fetchOne("SELECT * FROM bookings WHERE id = ?", [$booking['id']]);
