@@ -43,6 +43,11 @@ const handleResponse = async (response) => {
         try {
             const errData = await response.json();
             errMsg = errData.message || errData.error || errMsg;
+            
+            // Helpful note for developers: 401 + "token" usually means logout needed
+            if (response.status === 401 && (errMsg.includes('token') || errMsg.includes('signature'))) {
+                console.warn('Authentication failure detected:', errMsg);
+            }
         } catch (_) { /* ignore parse errors */ }
         throw new Error(errMsg);
     }

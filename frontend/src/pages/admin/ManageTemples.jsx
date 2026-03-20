@@ -209,6 +209,17 @@ const ManageTemples = () => {
                         <AlertCircle size={16} />
                         <span className="font-medium">{error}</span>
                     </div>
+                    {error.includes("token signature") && (
+                        <div className="flex items-center gap-3 mt-1 pl-6">
+                            <p className="text-red-600 italic">Your session has expired or the security key has changed.</p>
+                            <button
+                                onClick={() => { localStorage.clear(); window.location.href = '/login'; }}
+                                className="px-3 py-1.5 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors font-medium text-xs"
+                            >
+                                Logout & Login Again
+                            </button>
+                        </div>
+                    )}
                     {error.includes("doesn't exist") && (
                         <div className="flex items-center gap-3 mt-1 pl-6">
                             <p className="text-red-600 italic">It looks like the database table is missing.</p>
