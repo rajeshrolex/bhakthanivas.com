@@ -65,7 +65,7 @@ if ($method === 'GET') {
 
 // ============================================================== POST
 if ($method === 'POST' && !isset($seg[2])) {
-    requireSuperAdmin();
+    requireAuth();
     $body = getBody();
 
     if (empty($body['lodgeId']) || empty($body['date'])) {
@@ -102,7 +102,7 @@ if ($method === 'POST' && !isset($seg[2])) {
 
 // ============================================================== POST bulk
 if ($method === 'POST' && ($seg[2] ?? '') === 'bulk') {
-    requireSuperAdmin();
+    requireAuth();
     $body  = getBody();
     $dates = $body['dates'] ?? [];
 

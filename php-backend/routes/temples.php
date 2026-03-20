@@ -73,7 +73,7 @@ if ($method === 'GET' && $rawId !== null) {
 
 // ============================================================ POST /temples
 if ($method === 'POST') {
-    requireSuperAdmin();
+    requireAuth();
     $body = getBody();
     
     if (empty($body['name'])) jsonError('Temple name is required');
@@ -106,7 +106,7 @@ if ($method === 'POST') {
 
 // ============================================================ PUT /temples/:id
 if ($method === 'PUT' && $rawId !== null) {
-    requireSuperAdmin();
+    requireAuth();
     $body = getBody();
     $id = (int)$rawId;
     

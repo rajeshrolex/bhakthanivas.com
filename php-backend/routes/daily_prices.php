@@ -48,7 +48,7 @@ if ($method === 'GET') {
 
 // ============================================================== POST (upsert)
 if ($method === 'POST' && $id === null) {
-    requireSuperAdmin();
+    requireAuth();
 
     $body = getBody();
 
@@ -93,7 +93,7 @@ if ($method === 'POST' && $id === null) {
 // ============================================================== POST bulk-upsert
 // POST /api/daily-prices/bulk
 if ($method === 'POST' && ($seg[2] ?? '') === 'bulk') {
-    requireSuperAdmin();
+    requireAuth();
 
     $body    = getBody();
     $entries = $body['entries'] ?? [];

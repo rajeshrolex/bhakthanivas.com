@@ -32,6 +32,7 @@ function enrichLodge(array $lodge, Database $db): array
     $lodge['images']       = json_decode($lodge['images']    ?? '[]', true) ?? [];
     $lodge['isBlocked']    = (bool)($lodge['is_blocked'] ?? false);
     $lodge['isFeatured']   = (bool)($lodge['featured']   ?? false);
+    $lodge['featured']     = (bool)($lodge['featured']   ?? false); // Duplicated for frontend parity
 
     // Fetch blocked dates
     $dates = $db->fetchAll("SELECT date FROM blocked_dates WHERE lodge_id = ?", [$lodge['id']]);
@@ -190,6 +191,30 @@ if ($method === 'POST' && $id === null) {
     );
 
     $newId  = (int)$db->lastInsertId();
+
+    // Synchronization of rooms (if provided)
+    if (isset($body['rooms']) && is_array($body['rooms'])) {
+        foreach ($body['rooms'] as $rm) {
+            $db->query(
+                "INSERT INTO rooms
+                 (lodge_id, type, name, price, base_guests, extra_guest_price, max_occupancy, total_rooms, available, amenities)
+                 VALUES (?,?,?,?,?,?,?,?,?,?)",
+                [
+                    $newId,
+                    $rm['type']              ?? 'Non-AC',
+                    $rm['name']              ?? ($rm['type'] ?? 'Standard'),
+                    (float)($rm['price']     ?? 0),
+                    (int)($rm['baseGuests']  ?? 2),
+                    (float)($rm['extraGuestPrice'] ?? 0),
+                    (int)($rm['maxOccupancy'] ?? 2),
+                    (int)($rm['totalRooms']  ?? 0),
+                    (int)($rm['available']   ?? ($rm['totalRooms'] ?? 0)),
+                    json_encode($rm['amenities'] ?? []),
+                ]
+            );
+        }
+    }
+
     $lodge  = $db->fetchOne("SELECT * FROM lodges WHERE id = ?", [$newId]);
     $lodge  = enrichLodge($lodge, $db);
 
@@ -230,20 +255,46 @@ if ($method === 'PUT' && $id !== null) {
             $body['tagline']      ?? $lodge['tagline'],
             json_encode($body['images']    ?? json_decode($lodge['images'] ?? '[]', true)),
             $body['distance']     ?? $lodge['distance'],
-            $body['distanceType'] ?? $lodge['distance_type'],
-            $body['priceStarting']?? $lodge['price_starting'],
+            $body['distanceType'] ?? $lodge['distance_type'] ?? $body['distance_type'],
+            $body['priceStarting']?? $lodge['price_starting']?? $body['price_starting'],
             $body['availability'] ?? $lodge['availability'],
-            isset($body['featured'])  ? ($body['featured']  ? 1 : 0) : $lodge['featured'],
+            // isFeatured fallback
+            isset($body['isFeatured']) ? ($body['isFeatured'] ? 1 : 0) : (isset($body['featured']) ? ($body['featured'] ? 1 : 0) : $lodge['featured']),
             json_encode($body['amenities'] ?? json_decode($lodge['amenities'] ?? '[]', true)),
             $body['address']      ?? $lodge['address'],
             $body['phone']        ?? $lodge['phone'],
             $body['whatsapp']     ?? $lodge['whatsapp'],
             $body['description']  ?? $lodge['description'],
+            // isBlocked fallback
             isset($body['isBlocked']) ? ($body['isBlocked'] ? 1 : 0) : $lodge['is_blocked'],
             $body['terms']        ?? $lodge['terms'],
             $id,
         ]
     );
+
+    // Synchronization of rooms (if provided) - Delete and Recreate parity with Node.js
+    if (isset($body['rooms']) && is_array($body['rooms'])) {
+        $db->query("DELETE FROM rooms WHERE lodge_id = ?", [$id]);
+        foreach ($body['rooms'] as $rm) {
+            $db->query(
+                "INSERT INTO rooms
+                 (lodge_id, type, name, price, base_guests, extra_guest_price, max_occupancy, total_rooms, available, amenities)
+                 VALUES (?,?,?,?,?,?,?,?,?,?)",
+                [
+                    $id,
+                    $rm['type']              ?? 'Non-AC',
+                    $rm['name']              ?? ($rm['type'] ?? 'Standard'),
+                    (float)($rm['price']     ?? 0),
+                    (int)($rm['baseGuests']  ?? 2),
+                    (float)($rm['extraGuestPrice'] ?? 0),
+                    (int)($rm['maxOccupancy'] ?? 2),
+                    (int)($rm['totalRooms']  ?? 0),
+                    (int)($rm['available']   ?? ($rm['totalRooms'] ?? 0)),
+                    json_encode($rm['amenities'] ?? []),
+                ]
+            );
+        }
+    }
 
     $updated = $db->fetchOne("SELECT * FROM lodges WHERE id = ?", [$id]);
     $updated = enrichLodge($updated, $db);
