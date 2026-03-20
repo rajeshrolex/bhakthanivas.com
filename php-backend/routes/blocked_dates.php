@@ -25,6 +25,10 @@ if ($method === 'GET') {
         $lodgeId  = (int)$seg[2];
         $monthStr = $seg[4]; // YYYY-MM
         
+        $blocks = $db->fetchAll(
+            "SELECT * FROM blocked_dates WHERE lodge_id = ? AND date LIKE ?",
+            [$lodgeId, "{$monthStr}%"]
+        );
         $mapped = array_map(function($b) {
             return [
                 '_id'     => $b['id'],
