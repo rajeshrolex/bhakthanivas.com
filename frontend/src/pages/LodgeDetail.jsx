@@ -106,13 +106,14 @@ const LodgeDetail = () => {
             .then(results => {
                 const map = {};
                 results.flat().forEach(item => {
-                    if (!map[item.date]) map[item.date] = {};
-                    map[item.date][item.roomType] = item.price;
+                    const date = item.date.substring(0, 10);
+                    if (!map[date]) map[date] = {};
+                    map[date][item.roomType] = item.price;
                 });
                 setDailyPriceMap(map);
             })
             .catch(() => setDailyPriceMap({}));
-    }, [lodge, checkIn, checkOut]);
+    }, [lodge?._id, checkIn, checkOut]);
 
     if (loading) {
         return (
@@ -193,14 +194,12 @@ const LodgeDetail = () => {
     // Whether the check-in date has a custom price for a room type
     const getCheckInOverridePrice = (room) => {
         const override = dailyPriceMap[checkIn]?.[room?.type];
-        return override?.price !== undefined ? override.price : undefined;
+        return override !== undefined ? override : undefined;
     };
 
     const handleRoomSelect = (room) => {
         if (!room) return;
-        setSelectedRoom(room);
-        selectRoom(room);
-
+        
         // Calculate if we need more rooms for current guest count
         const maxOccupancy = room.maxOccupancy || 6;
         let newRooms = Math.max(rooms, Math.ceil(guests / maxOccupancy));
@@ -215,6 +214,12 @@ const LodgeDetail = () => {
         const nextGuests = Math.min(guests || 1, maxGuestsForNewRooms);
         setGuestsValue(nextGuests);
         setGuests(nextGuests);
+
+        setSelectedRoom(room);
+        selectRoom({
+            ...room,
+            _stayTotal: computeStayTotal(room, newRooms, nextGuests)
+        });
     };
 
     // Calculate total nights and per-night breakdown
@@ -242,6 +247,16 @@ const LodgeDetail = () => {
         }
         return total;
     };
+
+    // Keep the context's selectedRoom in sync with latest dates/rooms/guests/prices
+    useEffect(() => {
+        if (selectedRoom) {
+            selectRoom({
+                ...selectedRoom,
+                _stayTotal: computeStayTotal(selectedRoom)
+            });
+        }
+    }, [checkIn, checkOut, dailyPriceMap, rooms, guests]);
 
     const handleBookNow = () => {
         if (hasBlockedDates) {
