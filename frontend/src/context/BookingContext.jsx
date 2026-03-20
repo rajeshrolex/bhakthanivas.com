@@ -145,7 +145,7 @@ export const BookingProvider = ({ children }) => {
                 amountPaid:    paymentDetails?.amountPaid   ?? 0,
                 balanceAmount: paymentDetails?.balanceAmount ?? (calculateTotalPrice() || 0),
                 paymentStatus: paymentStatus,
-                paymentId:     paymentDetails?.razorpay_payment_id ?? null,
+                paymentId:     paymentDetails?.paymentId ?? paymentDetails?.razorpay_payment_id ?? null,
             };
 
             const result = await bookingAPI.create(bookingPayload);

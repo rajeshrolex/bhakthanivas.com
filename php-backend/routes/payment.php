@@ -75,8 +75,10 @@ if ($method === 'POST' && $action === 'create-order') {
 
         jsonResponse([
             'success'  => true,
-            'order'    => $result['body'],
-            'key'      => RAZORPAY_KEY_ID,
+            'orderId'  => $result['body']['id'],
+            'amount'   => $result['body']['amount'],
+            'currency' => $result['body']['currency'],
+            'keyId'    => RAZORPAY_KEY_ID,
         ]);
 
     } catch (\Exception $e) {
