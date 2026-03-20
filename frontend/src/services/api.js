@@ -14,14 +14,23 @@ export const API_BASE_URL =
     import.meta.env.VITE_API_URL ||
     (isLocalhost ? `http://${window.location.hostname}:5000/api` : '/api');
 
-export const BASE_URL = API_BASE_URL.replace(/\/api$/, '');
+export const BASE_URL = API_BASE_URL.replace(/\/api\/?$/, '');
 
 // ── Helper: build full image URL ─────────────────────────────────────────────
 export const getImageUrl = (path) => {
     if (!path) return 'https://via.placeholder.com/400x300?text=No+Image';
     if (path.startsWith('http')) return path;
-    const cleanPath = path.startsWith('/') ? path.substring(1) : path;
-    return `${BASE_URL}/${cleanPath}`;
+    
+    // Normalize path: remove leading slashes and handle "api/" prefix IF present in path
+    const cleanPath = path.replace(/^\/+/, '');
+    
+    // If the path already has "api/uploads", don't double it. 
+    // If it's just "uploads/...", and our backend requires "/api/uploads", we need to decide.
+    // Given the PHP backend structure, if the API is at /api, then uploads are at /api/uploads.
+    
+    // Let's use a smart join that avoids double slashes and handles relative paths correctly.
+    const baseUrl = BASE_URL.replace(/\/+$/, ''); // Remove trailing slash from BASE_URL
+    return `${baseUrl}/${cleanPath}`;
 };
 
 // ── Helper: get authorization headers from localStorage ───────────────────────
