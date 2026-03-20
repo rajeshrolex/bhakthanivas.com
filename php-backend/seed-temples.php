@@ -20,11 +20,11 @@ $temples = [
         'name' => 'Sri Raghavendra Swamy Mutt',
         'location' => 'Mantralayam, Andhra Pradesh',
         'google_maps_link' => 'https://maps.app.goo.gl/MantralayamTemple',
-        'distance' => '0 km',
-        'darshan_timings' => "Morning: 6:00 AM - 2:00 PM\nEvening: 4:00 PM - 9:00 PM",
-        'special_darshan_timings' => "Rathotsavam: 7:00 PM onwards\nHasthodaka: 12:30 PM",
-        'nearby_railway_station' => 'Mantralayam Road (MALM) - 16 km away',
-        'bus_timings' => 'Regular buses from Kurnool, Raichur, and Adoni.',
+        'distance' => '16 km',
+        'darshan_timings' => "Morning: 6:00 AM - 1:00 PM\nEvening: 4:00 PM - 8:00 PM",
+        'special_darshan_timings' => "VIP Darshan: 7:00 AM - 9:00 AM",
+        'nearby_railway_station' => 'Mantralayam Road (MAYE) - 15 km',
+        'bus_timings' => 'APSRTC buses from Kurnool, Hyderabad',
         'description' => 'The main Brindavana of the 17th-century Vaishnava saint Sri Raghavendra Swamy. It is located on the banks of the Tungabhadra River and is a major pilgrimage center.',
         'additional_info' => 'Free meals (Annadana) provided to devotees between 1:00 PM and 3:00 PM.',
         'images' => [
@@ -33,33 +33,18 @@ $temples = [
         ]
     ],
     [
-        'name' => 'Manchalamma Temple',
-        'location' => 'Adjacent to the Mutt, Mantralayam',
-        'google_maps_link' => 'https://maps.app.goo.gl/ManchalammaTemple',
-        'distance' => '0.1 km',
-        'darshan_timings' => "Morning: 6:00 AM - 1:30 PM\nEvening: 4:30 PM - 8:30 PM",
-        'special_darshan_timings' => "Navarathri Special Puja",
-        'nearby_railway_station' => 'Mantralayam Road (MALM) - 16 km away',
-        'bus_timings' => 'Walking distance from the Mutt.',
-        'description' => 'Dedicated to Goddess Manchalamma, she is considered the presiding deity of Mantralayam. Devotees traditionally visit this temple before entering the Raghavendra Swamy Mutt.',
-        'additional_info' => 'The temple is situated right at the entrance of the Mutt complex.',
+        'name' => 'Sample Temple (Dummy)',
+        'location' => 'Generic Location, State',
+        'google_maps_link' => 'https://maps.google.com/...',
+        'distance' => 'e.g. 5 km',
+        'darshan_timings' => "Morning: 6:00 AM - 12:00 PM\nEvening: 5:00 PM - 9:00 PM",
+        'special_darshan_timings' => "e.g. VIP Darshan: 7:00 AM - 9:00 AM",
+        'nearby_railway_station' => 'e.g. Nearby Road (NR) - 10 km',
+        'bus_timings' => 'e.g. APSRTC buses from City Center',
+        'description' => 'Detailed description about the temple...',
+        'additional_info' => 'Any extra details, package costs, special notes...',
         'images' => [
             'https://images.unsplash.com/photo-1519810755548-39cd217da494?w=800'
-        ]
-    ],
-    [
-        'name' => 'Panchamukhi Anjaneya Temple',
-        'location' => 'Gandhal, Karnataka (Across the river)',
-        'google_maps_link' => 'https://maps.app.goo.gl/PanchamukhiTemple',
-        'distance' => '22 km',
-        'darshan_timings' => "Morning: 7:00 AM - 1:00 PM\nEvening: 3:00 PM - 7:30 PM",
-        'special_darshan_timings' => "Hanuman Jayanthi Celebration",
-        'nearby_railway_station' => 'Raichur Railway Station - 25 km away',
-        'bus_timings' => 'Share autos and private jeeps available from Mantralayam main circle.',
-        'description' => 'The spot where Sri Raghavendra Swamy performed penance for 12 years. Lord Hanuman appeared here in a five-faced form (Panchamukhi).',
-        'additional_info' => 'Located on a small hillock with beautiful surrounding views.',
-        'images' => [
-            'https://images.unsplash.com/photo-1606293459207-681b953d394d?w=800'
         ]
     ]
 ];

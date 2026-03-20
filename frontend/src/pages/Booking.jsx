@@ -167,12 +167,6 @@ const Booking = () => {
                     alert('Payment failed. Please try again or select Pay at Lodge.');
                 }
             );
-        } else {
-            // Pay at Lodge
-            const result = await submitBooking();
-            if (result && result.bookingId) {
-                navigate(`/booking/confirmation/${result.bookingId}`);
-            }
         }
     };
 
@@ -451,86 +445,52 @@ const Booking = () => {
                                     Payment Options
                                 </h2>
 
-                                <div className="space-y-4">
-                                    {/* Pay Full Amount (UPI) */}
-                                    <label
-                                        className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${paymentOption === 'full'
-                                            ? 'border-primary-500 bg-primary-50'
-                                            : 'border-gray-200 hover:border-gray-300'
-                                            }`}
+                                {/* Payment Options */}
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                                    <button
+                                        onClick={() => {
+                                            setPaymentOption('full');
+                                            handlePaymentSelect('upi');
+                                        }}
+                                        className={`p-4 border-2 rounded-xl text-left transition-all ${paymentOption === 'full' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'}`}
                                     >
-                                        <input
-                                            type="radio"
-                                            name="paymentOption"
-                                            checked={paymentOption === 'full'}
-                                            onChange={() => {
-                                                setPaymentOption('full');
-                                                handlePaymentSelect('upi');
-                                            }}
-                                            className="w-5 h-5 text-primary-500"
-                                        />
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-2">
-                                                <CreditCard size={20} className="text-primary-500" />
-                                                <span className="font-semibold text-gray-900">Pay Full Amount</span>
-                                                <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
-                                                    Instant Confirmation
-                                                </span>
-                                            </div>
-                                            <p className="text-sm text-gray-600 mt-1">
-                                                Pay ₹{totalPrice} via UPI now
-                                            </p>
+                                        <div className="flex justify-between items-center mb-2">
+                                            <span className="font-semibold text-gray-800">Full Payment</span>
+                                            {paymentOption === 'full' && <CheckCircle2 className="w-5 h-5 text-primary-500" />}
                                         </div>
-                                    </label>
+                                        <p className="text-2xl font-bold text-primary-600 mb-1">₹{totalPrice}</p>
+                                        <p className="text-sm text-gray-500">Pay full amount now to confirm booking</p>
+                                    </button>
 
-                                    {/* Pay 50% Advance */}
-                                    <div
-                                        className={`p-4 rounded-xl border-2 transition-all ${paymentOption === 'partial'
-                                            ? 'border-primary-500 bg-primary-50'
-                                            : 'border-gray-200 hover:border-gray-300'
-                                            }`}
+                                    <button
+                                        onClick={() => {
+                                            setPaymentOption('partial');
+                                            handlePaymentSelect('upi');
+                                        }}
+                                        className={`p-4 border-2 rounded-xl text-left transition-all ${paymentOption === 'partial' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'}`}
                                     >
-                                        <label className="flex items-center gap-4 cursor-pointer">
-                                            <input
-                                                type="radio"
-                                                name="paymentOption"
-                                                checked={paymentOption === 'partial'}
-                                                onChange={() => {
-                                                    setPaymentOption('partial');
-                                                    handlePaymentSelect('upi');
-                                                }}
-                                                className="w-5 h-5 text-primary-500"
-                                            />
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-2">
-                                                    <CreditCard size={20} className="text-orange-500" />
-                                                    <span className="font-semibold text-gray-900">Pay 50% Advance</span>
-                                                </div>
-                                                <p className="text-sm text-gray-600 mt-1">
-                                                    Pay 50% now, rest at lodge
-                                                </p>
-                                            </div>
-                                        </label>
+                                        <div className="flex justify-between items-center mb-2">
+                                            <span className="font-semibold text-gray-800">Partial Payment</span>
+                                            {paymentOption === 'partial' && <CheckCircle2 className="w-5 h-5 text-primary-500" />}
+                                        </div>
+                                        <p className="text-2xl font-bold text-primary-600 mb-1">₹{Math.ceil(totalPrice / 2)}</p>
+                                        <p className="text-sm text-gray-500">Pay token amount, balance at lodge</p>
+                                    </button>
 
-                                        {paymentOption === 'partial' && (
-                                            <div className="mt-4 space-y-3">
-                                                <div className="bg-blue-50 p-3 rounded-lg space-y-1">
-                                                    <div className="flex justify-between text-sm">
-                                                        <span className="text-gray-600">Pay Online (50%):</span>
-                                                        <span className="font-semibold text-green-600">₹{Math.ceil(totalPrice / 2)}</span>
-                                                    </div>
-                                                    <div className="flex justify-between text-sm">
-                                                        <span className="text-gray-600">Pay at Lodge (50%):</span>
-                                                        <span className="font-semibold text-orange-600">₹{totalPrice - Math.ceil(totalPrice / 2)}</span>
-                                                    </div>
-                                                    <div className="flex justify-between text-sm pt-2 border-t border-blue-200">
-                                                        <span className="font-medium text-gray-900">Total:</span>
-                                                        <span className="font-bold text-gray-900">₹{totalPrice}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
+                                    <button
+                                        onClick={() => {
+                                            setPaymentOption('lodge');
+                                            handlePaymentSelect('payAtLodge');
+                                        }}
+                                        className={`p-4 border-2 rounded-xl text-left transition-all ${paymentOption === 'lodge' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'}`}
+                                    >
+                                        <div className="flex justify-between items-center mb-2">
+                                            <span className="font-semibold text-gray-800">Pay at Lodge</span>
+                                            {paymentOption === 'lodge' && <CheckCircle2 className="w-5 h-5 text-primary-500" />}
+                                        </div>
+                                        <p className="text-2xl font-bold text-primary-600 mb-1">₹0</p>
+                                        <p className="text-sm text-gray-500">Book now, pay full amount at check-in</p>
+                                    </button>
                                 </div>
 
                                 {/* Security Note */}

@@ -139,7 +139,7 @@ const BookingConfirmation = () => {
     // Auto-calculate checkout time = check-in time + 23 hours per night
     const computedCheckOut = calculateCheckOutTime(checkIn || new Date().toISOString(), checkInTime || '12:00', checkOut || null);
     const displayCheckOutTime = checkOutTime || computedCheckOut.checkOutTime;
-    const displayCheckOutDate = checkOut ? format(computedCheckOut.checkOutDate, 'dd MMM yyyy') : 'Tomorrow';
+    const displayCheckOutDate = checkOut ? format(new Date(checkOut + 'T00:00:00'), 'dd MMM yyyy') : 'Tomorrow';
 
 
     const baseGuests = selectedRoom.baseGuests || selectedRoom.maxOccupancy || 1;

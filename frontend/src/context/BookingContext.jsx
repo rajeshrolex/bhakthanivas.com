@@ -169,10 +169,10 @@ export const BookingProvider = ({ children }) => {
                 }));
                 return result;
             }
-            return null;
+            throw new Error(result?.message || 'Booking failed. Please try again.');
         } catch (error) {
             console.error('Error submitting booking:', error);
-            return null;
+            throw error; // Throw so UI can handle and show alert
         } finally {
             setIsSubmitting(false);
         }
