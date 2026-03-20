@@ -43,7 +43,22 @@ if ($method === 'GET') {
         $params
     );
 
-    jsonResponse($prices);
+    // Map to camelCase for frontend parity
+    $mapped = array_map(function($item) {
+        return [
+            '_id'       => $item['id'],
+            'id'        => $item['id'],
+            'lodgeId'   => $item['lodge_id'],
+            'date'      => $item['date'],
+            'roomType'  => $item['room_type'],
+            'price'     => $item['price'] !== null ? (float)$item['price'] : null,
+            'isBlocked' => (bool)$item['is_blocked'],
+            'createdAt' => $item['created_at'] ?? null,
+            'updatedAt' => $item['updated_at'] ?? null
+        ];
+    }, $prices);
+
+    jsonResponse($mapped);
 }
 
 // ============================================================== POST (upsert)
@@ -78,16 +93,30 @@ if ($method === 'POST' && $id === null) {
             "UPDATE daily_prices SET price = ?, is_blocked = ? WHERE id = ?",
             [$price, $isBlocked, $existing['id']]
         );
-        $row = $db->fetchOne("SELECT * FROM daily_prices WHERE id = ?", [$existing['id']]);
+        $id = $existing['id'];
     } else {
         $db->query(
             "INSERT INTO daily_prices (lodge_id, date, room_type, price, is_blocked) VALUES (?,?,?,?,?)",
             [$lodgeId, $date, $roomType, $price, $isBlocked]
         );
-        $row = $db->fetchOne("SELECT * FROM daily_prices WHERE id = ?", [$db->lastInsertId()]);
+        $id = $db->lastInsertId();
     }
 
-    jsonResponse(['success' => true, 'price' => $row], $existing ? 200 : 201);
+    $row = $db->fetchOne("SELECT * FROM daily_prices WHERE id = ?", [$id]);
+
+    $mapped = [
+        '_id'       => (int)$row['id'],
+        'id'        => (int)$row['id'],
+        'lodgeId'   => (int)$row['lodge_id'],
+        'date'      => $row['date'],
+        'roomType'  => $row['room_type'],
+        'price'     => $row['price'] !== null ? (float)$row['price'] : null,
+        'isBlocked' => (bool)$row['is_blocked'],
+        'createdAt' => $row['created_at'] ?? null,
+        'updatedAt' => $row['updated_at'] ?? null
+    ];
+
+    jsonResponse(['success' => true, 'price' => $mapped], $existing ? 200 : 201);
 }
 
 // ============================================================== POST bulk-upsert

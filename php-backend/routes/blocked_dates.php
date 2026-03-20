@@ -25,18 +25,32 @@ if ($method === 'GET') {
         $lodgeId  = (int)$seg[2];
         $monthStr = $seg[4]; // YYYY-MM
         
-        $blocks = $db->fetchAll(
-            "SELECT * FROM blocked_dates WHERE lodge_id = ? AND date LIKE ?",
-            [$lodgeId, "{$monthStr}%"]
-        );
-        jsonResponse($blocks);
+        $mapped = array_map(function($b) {
+            return [
+                '_id'     => $b['id'],
+                'id'      => $b['id'],
+                'lodgeId' => $b['lodge_id'],
+                'date'    => $b['date'],
+                'reason'  => $b['reason']
+            ];
+        }, $blocks);
+        jsonResponse($mapped);
     }
 
     // Pattern: /api/blocked-dates/:lodgeId
     if (isset($seg[2]) && is_numeric($seg[2]) && !isset($seg[3])) {
         $lodgeId = (int)$seg[2];
         $blocks  = $db->fetchAll("SELECT * FROM blocked_dates WHERE lodge_id = ?", [$lodgeId]);
-        jsonResponse($blocks);
+        $mapped = array_map(function($b) {
+            return [
+                '_id'     => $b['id'],
+                'id'      => $b['id'],
+                'lodgeId' => $b['lodge_id'],
+                'date'    => $b['date'],
+                'reason'  => $b['reason']
+            ];
+        }, $blocks);
+        jsonResponse($mapped);
     }
 
     // Pattern: /api/blocked-dates?lodgeId=
@@ -56,11 +70,16 @@ if ($method === 'GET') {
     }
 
     $whereClause = $where ? 'WHERE ' . implode(' AND ', $where) : '';
-    $dates = $db->fetchAll(
-        "SELECT * FROM blocked_dates {$whereClause} ORDER BY date ASC",
-        $params
-    );
-    jsonResponse($dates);
+    $mapped = array_map(function($b) {
+        return [
+            '_id'     => $b['id'],
+            'id'      => $b['id'],
+            'lodgeId' => $b['lodge_id'],
+            'date'    => $b['date'],
+            'reason'  => $b['reason']
+        ];
+    }, $dates);
+    jsonResponse($mapped);
 }
 
 // ============================================================== POST
@@ -97,7 +116,14 @@ if ($method === 'POST' && !isset($seg[2])) {
     }
 
     $row = $db->fetchOne("SELECT * FROM blocked_dates WHERE id = ?", [$id]);
-    jsonResponse($row, $existing ? 200 : 201);
+    $mapped = [
+        '_id'     => $row['id'],
+        'id'      => $row['id'],
+        'lodgeId' => $row['lodge_id'],
+        'date'    => $row['date'],
+        'reason'  => $row['reason']
+    ];
+    jsonResponse($mapped, $existing ? 200 : 201);
 }
 
 // ============================================================== POST bulk

@@ -199,13 +199,14 @@ const PriceCalendar = () => {
                     continue;
                 }
 
-                const doc = await dailyPriceAPI.upsert({
+                const response = await dailyPriceAPI.upsert({
                     lodgeId: selectedLodge._id,
                     date: selectedDay,
                     roomType: rt,
                     price: isNaN(numVal) ? undefined : numVal,
                     isBlocked: isRoomBlocked
                 });
+                const doc = response.price;
                 newOverrides[selectedDay][rt] = { 
                     _id: doc._id, 
                     price: doc.price,
