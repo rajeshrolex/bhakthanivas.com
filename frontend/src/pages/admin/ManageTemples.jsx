@@ -42,6 +42,7 @@ const ManageTemples = () => {
     const [formData, setFormData] = useState({ ...emptyTemple });
     const [error, setError] = useState('');
     const [uploading, setUploading] = useState(false);
+    const [repairing, setRepairing] = useState(false);
 
     useEffect(() => {
         fetchTemples();
@@ -51,10 +52,27 @@ const ManageTemples = () => {
         try {
             const data = await templeAPI.getAll();
             setTemples(Array.isArray(data) ? data : []);
+            setError('');
         } catch (err) {
             console.error('Error fetching temples:', err);
+            setError(err.message);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleRepairDatabase = async () => {
+        if (!window.confirm('This will attempt to create missing database tables. Continue?')) return;
+        setRepairing(true);
+        setError('');
+        try {
+            await systemAPI.migrate();
+            alert('Database repaired successfully!');
+            await fetchTemples();
+        } catch (err) {
+            setError('Repair failed: ' + err.message);
+        } finally {
+            setRepairing(false);
         }
     };
 
@@ -186,9 +204,30 @@ const ManageTemples = () => {
             </div>
 
             {error && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 text-sm">
-                    <AlertCircle size={16} />
-                    {error}
+                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex flex-col gap-3 text-red-700 text-sm">
+                    <div className="flex items-center gap-2">
+                        <AlertCircle size={16} />
+                        <span className="font-medium">{error}</span>
+                    </div>
+                    {error.includes("doesn't exist") && (
+                        <div className="flex items-center gap-3 mt-1 pl-6">
+                            <p className="text-red-600 italic">It looks like the database table is missing.</p>
+                            <button
+                                onClick={handleRepairDatabase}
+                                disabled={repairing}
+                                className="px-3 py-1.5 bg-red-600 text-white rounded hover:bg-red-700 transition-colors font-medium flex items-center gap-2 disabled:opacity-50"
+                            >
+                                {repairing ? (
+                                    <>
+                                        <Loader2 size={14} className="animate-spin" />
+                                        Repairing...
+                                    </>
+                                ) : (
+                                    'Repair Database'
+                                )}
+                            </button>
+                        </div>
+                    )}
                 </div>
             )}
 

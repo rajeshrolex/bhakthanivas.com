@@ -450,6 +450,17 @@ export const templeAPI = {
     },
 };
 
+// ── System API ────────────────────────────────────────────────────────────────
+export const systemAPI = {
+    migrate: async () => {
+        const response = await fetch(`${API_BASE_URL}/system/migrate`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+        });
+        return handleResponse(response);
+    },
+};
+
 // Default export for backward compatibility
 export default {
     lodgeAPI,
@@ -463,4 +474,5 @@ export default {
     dailyPriceAPI,
     blockedDatesAPI,
     templeAPI,
+    systemAPI,
 };

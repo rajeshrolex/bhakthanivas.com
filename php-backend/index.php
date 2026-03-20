@@ -83,6 +83,10 @@ try {
             require_once __DIR__ . '/routes/temples.php';
             break;
 
+        case 'system':
+            require_once __DIR__ . '/routes/system.php';
+            break;
+
         case 'upload':
             require_once __DIR__ . '/routes/upload.php';
             break;
