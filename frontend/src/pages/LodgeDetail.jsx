@@ -108,7 +108,8 @@ const LodgeDetail = () => {
                 results.flat().forEach(item => {
                     const date = item.date.substring(0, 10);
                     if (!map[date]) map[date] = {};
-                    map[date][item.roomType] = item.price;
+                    // Store full object {price, isBlocked} so isRoomTypeBlocked can read isBlocked
+                    map[date][item.roomType] = { price: item.price, isBlocked: !!item.isBlocked };
                 });
                 setDailyPriceMap(map);
             })
@@ -162,7 +163,9 @@ const LodgeDetail = () => {
 
     // Effective price for a room on a specific date (default: check-in date for display)
     const getEffectivePrice = (room, date = checkIn) => {
-        const override = dailyPriceMap[date]?.[room?.type];
+        // dailyPriceMap[date][type] is now {price, isBlocked}
+        const entry = dailyPriceMap[date]?.[room?.type];
+        const override = entry !== undefined ? entry.price : undefined;
         return override != null ? override : (room?.price || 0);
     };
 
@@ -193,6 +196,7 @@ const LodgeDetail = () => {
         let cur = new Date(start);
         while (cur < end) {
             const dateStr = format(cur, 'yyyy-MM-dd');
+            // dailyPriceMap[date][type] is now {price, isBlocked}
             if (dailyPriceMap[dateStr]?.[room.type]?.isBlocked) {
                 return true;
             }
@@ -203,8 +207,9 @@ const LodgeDetail = () => {
 
     // Whether the check-in date has a custom price for a room type
     const getCheckInOverridePrice = (room) => {
-        const override = dailyPriceMap[checkIn]?.[room?.type];
-        return override !== undefined ? override : undefined;
+        // dailyPriceMap[date][type] is {price, isBlocked}
+        const entry = dailyPriceMap[checkIn]?.[room?.type];
+        return entry !== undefined ? entry.price : undefined;
     };
 
     const handleRoomSelect = (room) => {
@@ -739,7 +744,8 @@ const LodgeDetail = () => {
                                                 <div className="flex justify-between">
                                                     <span>Room ({totalBaseGuests > 1 ? `${totalBaseGuests} guests` : `${totalBaseGuests} guest`}) × {rooms}</span>
                                                     <span>
-                                                        {dailyPriceMap[selectedRoom.type] != null && dailyPriceMap[selectedRoom.type] !== selectedRoom.price && (
+                                                        {dailyPriceMap[checkIn]?.[selectedRoom.type]?.price != null &&
+                                                            dailyPriceMap[checkIn]?.[selectedRoom.type]?.price !== selectedRoom.price && (
                                                             <span className="line-through text-gray-400 mr-1 text-xs">₹{selectedRoom.price * rooms}</span>
                                                         )}
                                                         ₹{getEffectivePrice(selectedRoom) * rooms}

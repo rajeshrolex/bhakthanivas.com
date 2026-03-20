@@ -28,13 +28,10 @@ if (in_array($origin, $allowedOrigins, true)) {
     header("Access-Control-Allow-Origin: {$origin}");
     header('Access-Control-Allow-Credentials: true');
 } else {
-    // BUG FIX: Previously sent "Access-Control-Allow-Origin: *" together with
-    // "Access-Control-Allow-Credentials: true". Browsers reject this combination
-    // per the CORS spec, causing preflight to fail for credentialed requests.
-    // For unknown origins, emit NO Access-Control-Allow-Origin header so the
-    // browser correctly blocks the request.
-    header('Access-Control-Allow-Origin: *');
-    // Note: credentials are NOT allowed with wildcard origin
+    // For unknown origins, do NOT send any CORS header.
+    // Sending wildcard (*) while Access-Control-Allow-Credentials is true
+    // is rejected by all browsers per the CORS spec.
+    // Simply omitting it causes the browser to block unrecognized cross-origin requests.
 }
 
 header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');

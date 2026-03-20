@@ -61,7 +61,51 @@ if ($method === 'GET') {
     jsonResponse($mapped);
 }
 
-// ============================================================== POST (upsert)
+// ============================================================== POST bulk-upsert
+// POST /api/daily-prices/bulk  — MUST be checked BEFORE single upsert (both have $id === null)
+if ($method === 'POST' && ($seg[2] ?? '') === 'bulk') {
+    requireAuth();
+
+    $body    = getBody();
+    $entries = $body['entries'] ?? [];
+
+    if (!is_array($entries) || empty($entries)) {
+        jsonError('entries array is required');
+    }
+
+    $inserted = 0;
+    $updated  = 0;
+
+    foreach ($entries as $entry) {
+        if (empty($entry['lodgeId']) || empty($entry['date']) || empty($entry['roomType'])) continue;
+
+        $existingBulk = $db->fetchOne(
+            "SELECT id FROM daily_prices WHERE lodge_id = ? AND date = ? AND room_type = ?",
+            [(int)$entry['lodgeId'], $entry['date'], $entry['roomType']]
+        );
+
+        $price     = isset($entry['price']) ? (float)$entry['price'] : null;
+        $isBlocked = isset($entry['isBlocked']) && $entry['isBlocked'] ? 1 : 0;
+
+        if ($existingBulk) {
+            $db->query(
+                "UPDATE daily_prices SET price = ?, is_blocked = ? WHERE id = ?",
+                [$price, $isBlocked, $existingBulk['id']]
+            );
+            $updated++;
+        } else {
+            $db->query(
+                "INSERT INTO daily_prices (lodge_id, date, room_type, price, is_blocked) VALUES (?,?,?,?,?)",
+                [(int)$entry['lodgeId'], $entry['date'], $entry['roomType'], $price, $isBlocked]
+            );
+            $inserted++;
+        }
+    }
+
+    jsonResponse(['success' => true, 'inserted' => $inserted, 'updated' => $updated]);
+}
+
+// ============================================================== POST (single upsert)
 if ($method === 'POST' && $id === null) {
     requireAuth();
 
@@ -117,50 +161,6 @@ if ($method === 'POST' && $id === null) {
     ];
 
     jsonResponse(['success' => true, 'price' => $mapped], $existing ? 200 : 201);
-}
-
-// ============================================================== POST bulk-upsert
-// POST /api/daily-prices/bulk
-if ($method === 'POST' && ($seg[2] ?? '') === 'bulk') {
-    requireAuth();
-
-    $body    = getBody();
-    $entries = $body['entries'] ?? [];
-
-    if (!is_array($entries) || empty($entries)) {
-        jsonError('entries array is required');
-    }
-
-    $inserted = 0;
-    $updated  = 0;
-
-    foreach ($entries as $entry) {
-        if (empty($entry['lodgeId']) || empty($entry['date']) || empty($entry['roomType'])) continue;
-
-        $existing = $db->fetchOne(
-            "SELECT id FROM daily_prices WHERE lodge_id = ? AND date = ? AND room_type = ?",
-            [(int)$entry['lodgeId'], $entry['date'], $entry['roomType']]
-        );
-
-        $price     = isset($entry['price']) ? (float)$entry['price'] : null;
-        $isBlocked = isset($entry['isBlocked']) && $entry['isBlocked'] ? 1 : 0;
-
-        if ($existing) {
-            $db->query(
-                "UPDATE daily_prices SET price = ?, is_blocked = ? WHERE id = ?",
-                [$price, $isBlocked, $existing['id']]
-            );
-            $updated++;
-        } else {
-            $db->query(
-                "INSERT INTO daily_prices (lodge_id, date, room_type, price, is_blocked) VALUES (?,?,?,?,?)",
-                [(int)$entry['lodgeId'], $entry['date'], $entry['roomType'], $price, $isBlocked]
-            );
-            $inserted++;
-        }
-    }
-
-    jsonResponse(['success' => true, 'inserted' => $inserted, 'updated' => $updated]);
 }
 
 // ============================================================== DELETE
