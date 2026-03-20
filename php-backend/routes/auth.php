@@ -51,8 +51,13 @@ if ($method === 'POST' && $action === 'login') {
         [strtolower($email)]
     );
 
+    if (!$user) {
+        jsonError('Invalid email or password', 401);
+    }
+
     $isMatch = false;
-    if (str_starts_with($user['password'], '$2')) {
+    // Check if password looks like a bcrypt hash (starts with $2)
+    if (strpos($user['password'], '$2') === 0) {
         $isMatch = password_verify($pass, $user['password']);
     } else {
         $isMatch = ($pass === $user['password']);

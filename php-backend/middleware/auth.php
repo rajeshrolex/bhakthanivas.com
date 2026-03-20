@@ -22,7 +22,7 @@ function requireAuth(): array
 {
     $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
 
-    if (empty($authHeader) || !str_starts_with($authHeader, 'Bearer ')) {
+    if (empty($authHeader) || strpos($authHeader, 'Bearer ') !== 0) {
         jsonError('No authorization token provided', 401);
     }
 
