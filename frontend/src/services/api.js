@@ -14,7 +14,7 @@ export const API_BASE_URL =
     import.meta.env.VITE_API_URL ||
     (isLocalhost ? `http://${window.location.hostname}:5000/api` : '/api');
 
-export const BASE_URL = API_BASE_URL.replace(/\/api\/?$/, '');
+export const BASE_URL = API_BASE_URL;
 
 // ── Helper: build full image URL ─────────────────────────────────────────────
 export const getImageUrl = (path) => {
