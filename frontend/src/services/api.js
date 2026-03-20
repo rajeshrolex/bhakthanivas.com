@@ -21,16 +21,27 @@ export const getImageUrl = (path) => {
     if (!path) return 'https://via.placeholder.com/400x300?text=No+Image';
     if (path.startsWith('http')) return path;
     
-    // Normalize path: remove leading slashes and handle "api/" prefix IF present in path
-    const cleanPath = path.replace(/^\/+/, '');
+    // 1. Clean the path: remove leading slashes
+    let cleanPath = path.replace(/^\/+/, '');
     
-    // If the path already has "api/uploads", don't double it. 
-    // If it's just "uploads/...", and our backend requires "/api/uploads", we need to decide.
-    // Given the PHP backend structure, if the API is at /api, then uploads are at /api/uploads.
+    // 2. Clean the base URL: remove trailing slashes
+    let baseUrl = (BASE_URL || '').replace(/\/+$/, '');
     
-    // Let's use a smart join that avoids double slashes and handles relative paths correctly.
-    const baseUrl = BASE_URL.replace(/\/+$/, ''); // Remove trailing slash from BASE_URL
-    return `${baseUrl}/${cleanPath}`;
+    // 3. Special case: if baseUrl is just a domain without a path (e.g. "https://example.com"),
+    // but the path doesn't start with a slash, we MUST ensure a slash exists.
+    // If baseUrl is empty, it becomes a root-relative path (e.g. "/uploads")
+    
+    // 4. Forceful check: If for some reason the concatenated result would be "domainuploads", fix it.
+    // This is a safety net for the "comuploads" issue seen on the live site.
+    let fullUrl = `${baseUrl}/${cleanPath}`;
+    
+    // If it's a protocol-relative double slash "//", it might be interpreted as a hostname.
+    // Ensure we don't start with "//" unless it's intended.
+    if (fullUrl.startsWith('//') && !baseUrl.startsWith('//')) {
+        fullUrl = '/' + fullUrl.replace(/^\/+/, '');
+    }
+    
+    return fullUrl;
 };
 
 // ── Helper: get authorization headers from localStorage ───────────────────────
