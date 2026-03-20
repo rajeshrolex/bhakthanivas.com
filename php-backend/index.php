@@ -119,7 +119,8 @@ try {
     echo json_encode([
         'success' => false,
         'error'   => 'Internal server error',
-        'message' => APP_ENV === 'development' ? $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() : 'An unexpected error occurred',
+        'message' => $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine(),
+        'trace'   => $e->getTraceAsString()
     ]);
     exit;
 }

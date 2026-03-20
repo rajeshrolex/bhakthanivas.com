@@ -33,7 +33,7 @@ define('APP_ENV',  $_ENV['APP_ENV']  ?? $_SERVER['APP_ENV']  ?? 'production');
 define('BASE_URL', rtrim($_ENV['BASE_URL'] ?? $_SERVER['BASE_URL'] ?? 'http://localhost', '/'));
 
 // --- JWT ---
-define('JWT_SECRET', $_ENV['JWT_SECRET'] ?? $_SERVER['JWT_SECRET'] ?? 'changeme');
+define('JWT_SECRET', $_ENV['JWT_SECRET'] ?? $_SERVER['JWT_SECRET'] ?? 'bhakthanivas_secret_key_minimum_32_characters_long');
 define('JWT_EXPIRY', (int)($_ENV['JWT_EXPIRY'] ?? $_SERVER['JWT_EXPIRY'] ?? 86400));   // 24h default
 
 // --- Razorpay ---
