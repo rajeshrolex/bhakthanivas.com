@@ -12,7 +12,7 @@ declare(strict_types=1);
 use Firebase\JWT\JWT;
 
 $db     = Database::getInstance();
-require_once __DIR__ . '/../utils/mail.php';
+require_once __DIR__ . '/../utils/EmailService.php';
 function generateOTP(int $length = 6): string {
     return str_pad((string)random_int(0, (int)pow(10, $length) - 1), $length, '0', STR_PAD_LEFT);
 }
@@ -202,7 +202,8 @@ if ($method === 'POST' && $action === 'forgot-password') {
         <p>If you didn't request this, please ignore this email.</p>
     ";
 
-    if (sendEmail($email, $subject, $message)) {
+    $emailService = new EmailService();
+    if ($emailService->sendOTP($email, $user['name'], $otp)) {
         jsonResponse(['success' => true, 'message' => 'OTP sent to your email']);
     } else {
         jsonError('Failed to send email. Please contact support.');

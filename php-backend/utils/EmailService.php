@@ -263,6 +263,56 @@ class EmailService
     }
 
     /**
+     * Send OTP email for password reset.
+     */
+    public function sendOTP(string $to, string $guestName, string $otp): bool
+    {
+        try {
+            $mail = $this->createMailer();
+
+            $subject = "Your BhaktaNivas Password Reset OTP";
+            $html = "
+<div style=\"font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px\">
+    <div style=\"background:linear-gradient(135deg,#4f46e5,#4338ca);padding:20px;border-radius:10px 10px 0 0\">
+        <h1 style=\"color:white;margin:0;text-align:center\">🔐 Password Recovery</h1>
+    </div>
+    <div style=\"background:#fff;padding:30px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 10px 10px\">
+        <p style=\"font-size:16px;color:#374151\">Hello <strong>" . htmlspecialchars($guestName) . "</strong>,</p>
+        <p style=\"color:#6b7280\">You requested a password reset for your BhaktaNivas admin account.</p>
+        
+        <div style=\"background:#f3f4f6;padding:30px;border-radius:12px;margin:25px 0;text-align:center\">
+            <p style=\"margin:0 0 10px 0;color:#6b7280;font-size:14px;text-transform:uppercase;letter-spacing:1px\">Your 6-Digit Verification Code</p>
+            <h2 style=\"margin:0;color:#4f46e5;font-size:42px;letter-spacing:8px;font-family:monospace\">{$otp}</h2>
+        </div>
+        
+        <div style=\"background:#fef2f2;padding:15px;border-radius:8px;margin:20px 0;border-left:4px solid #ef4444\">
+            <p style=\"margin:0;color:#991b1b;font-size:13px\">
+                <strong>⚠️ Security Notice:</strong> This code will expire in 10 minutes. 
+                If you did not request this, please ignore this email or contact the super admin.
+            </p>
+        </div>
+        
+        <p style=\"color:#6b7280;font-size:14px;margin-top:30px;text-align:center\">
+            Sent with 🙏 by BhaktaNivas Management System
+        </p>
+    </div>
+</div>";
+
+            $mail->setFrom(SMTP_EMAIL, 'BhaktaNivas System');
+            $mail->addAddress($to);
+            $mail->Subject = $subject;
+            $mail->isHTML(true);
+            $mail->Body    = $html;
+
+            $mail->send();
+            return true;
+        } catch (MailException $e) {
+            error_log('OTP email error: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
      * Send both guest confirmation and admin notification.
      */
     public function sendBookingEmails(array $bookingDetails): array
