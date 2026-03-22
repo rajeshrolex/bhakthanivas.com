@@ -234,6 +234,33 @@ export const authAPI = {
         });
         return handleResponse(response);
     },
+
+    forgotPassword: async (email) => {
+        const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email }),
+        });
+        return handleResponse(response);
+    },
+
+    verifyOTP: async (email, otp) => {
+        const response = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, otp }),
+        });
+        return handleResponse(response);
+    },
+
+    resetPassword: async (email, otp, newPassword) => {
+        const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, otp, newPassword }),
+        });
+        return handleResponse(response);
+    },
 };
 
 // ── User API ──────────────────────────────────────────────────────────────────

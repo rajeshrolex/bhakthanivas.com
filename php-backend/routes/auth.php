@@ -12,6 +12,10 @@ declare(strict_types=1);
 use Firebase\JWT\JWT;
 
 $db     = Database::getInstance();
+require_once __DIR__ . '/../utils/mail.php';
+function generateOTP(int $length = 6): string {
+    return str_pad((string)random_int(0, (int)pow(10, $length) - 1), $length, '0', STR_PAD_LEFT);
+}
 $method = $_SERVER['REQUEST_METHOD'];
 $seg    = getPathSegments();
 // segments: ['api','auth','login'] etc.
@@ -162,6 +166,100 @@ if ($method === 'POST' && $action === 'change-password') {
     $db->query("UPDATE users SET password = ? WHERE id = ?", [$hashed, $authUser['id']]);
 
     jsonResponse(['success' => true, 'message' => 'Password updated successfully']);
+}
+
+// ----------------------------------------------------------- POST /forgot-password
+if ($method === 'POST' && $action === 'forgot-password') {
+    $body  = getBody();
+    $email = strtolower(trim($body['email'] ?? ''));
+
+    if (empty($email)) {
+        jsonError('Email is required');
+    }
+
+    $user = $db->fetchOne("SELECT id, name FROM users WHERE email = ?", [$email]);
+    if (!$user) {
+        // For security, don't reveal if email exists or not, but for admin panel it's usually okay.
+        // Let's be helpful here.
+        jsonError('Email not found', 404);
+    }
+
+    $otp = generateOTP(6);
+    $expiresAt = date('Y-m-d H:i:s', time() + 600); // 10 minutes
+
+    $db->query("DELETE FROM password_resets WHERE email = ?", [$email]);
+    $db->query(
+        "INSERT INTO password_resets (email, otp, expires_at) VALUES (?, ?, ?)",
+        [$email, $otp, $expiresAt]
+    );
+
+    $subject = "Your BhaktaNivas Password Reset OTP";
+    $message = "
+        <h2>Hello {$user['name']},</h2>
+        <p>You requested a password reset for your BhaktaNivas admin account.</p>
+        <p>Your 6-digit OTP is: <b style='font-size: 24px; color: #4f46e5;'>{$otp}</b></p>
+        <p>This code will expire in 10 minutes.</p>
+        <p>If you didn't request this, please ignore this email.</p>
+    ";
+
+    if (sendEmail($email, $subject, $message)) {
+        jsonResponse(['success' => true, 'message' => 'OTP sent to your email']);
+    } else {
+        jsonError('Failed to send email. Please contact support.');
+    }
+}
+
+// ----------------------------------------------------------- POST /verify-otp
+if ($method === 'POST' && $action === 'verify-otp') {
+    $body  = getBody();
+    $email = strtolower(trim($body['email'] ?? ''));
+    $otp   = trim($body['otp']   ?? '');
+
+    if (empty($email) || empty($otp)) {
+        jsonError('Email and OTP are required');
+    }
+
+    $reset = $db->fetchOne(
+        "SELECT * FROM password_resets WHERE email = ? AND otp = ? AND expires_at > NOW()",
+        [$email, $otp]
+    );
+
+    if (!$reset) {
+        jsonError('Invalid or expired OTP', 400);
+    }
+
+    jsonResponse(['success' => true, 'message' => 'OTP verified successfully']);
+}
+
+// ----------------------------------------------------------- POST /reset-password
+if ($method === 'POST' && $action === 'reset-password') {
+    $body        = getBody();
+    $email       = strtolower(trim($body['email'] ?? ''));
+    $otp         = trim($body['otp']   ?? '');
+    $newPassword = $body['newPassword'] ?? '';
+
+    if (empty($email) || empty($otp) || empty($newPassword)) {
+        jsonError('Email, OTP and newPassword are required');
+    }
+
+    if (strlen($newPassword) < 6) {
+        jsonError('Password must be at least 6 characters');
+    }
+
+    $reset = $db->fetchOne(
+        "SELECT * FROM password_resets WHERE email = ? AND otp = ? AND expires_at > NOW()",
+        [$email, $otp]
+    );
+
+    if (!$reset) {
+        jsonError('Invalid or expired session. Please start over.', 400);
+    }
+
+    $hashed = password_hash($newPassword, PASSWORD_BCRYPT);
+    $db->query("UPDATE users SET password = ? WHERE email = ?", [$hashed, $email]);
+    $db->query("DELETE FROM password_resets WHERE email = ?", [$email]);
+
+    jsonResponse(['success' => true, 'message' => 'Password reset successfully. You can now login.']);
 }
 
 // Default: Not Found

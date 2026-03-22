@@ -170,9 +170,18 @@ if ($method === 'POST' && $action === 'migrate') {
                 bus_timings TEXT,
                 description TEXT,
                 additional_info TEXT,
-                images LONGTEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                updated_at TIMESTAMP     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        ",
+        'password_resets' => "
+            CREATE TABLE IF NOT EXISTS password_resets (
+                id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                email      VARCHAR(255) NOT NULL,
+                otp        VARCHAR(10)  NOT NULL,
+                expires_at DATETIME     NOT NULL,
+                created_at TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_email (email),
+                INDEX idx_otp   (otp)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         ",
     ];
