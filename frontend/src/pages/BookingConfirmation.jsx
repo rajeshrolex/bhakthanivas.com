@@ -46,13 +46,18 @@ const BookingConfirmation = () => {
                         selectedLodge: data.lodge || { 
                             _id: data.lodgeId, 
                             name: data.lodgeName,
-                            address: 'Near Sri Raghavendra Swamy Mutt, Mantralayam',
-                            images: [] 
+                            address: data.lodge_address || 'Near Sri Raghavendra Swamy Mutt, Mantralayam',
+                            phone: data.lodge_phone || '',
+                            whatsapp: data.lodge_whatsapp || '',
+                            images: data.lodge_images || [] 
                         },
-                        selectedRoom: {
+                        selectedRoom: data.room || {
                             name: data.roomName,
                             type: data.roomType,
-                            price: data.roomPrice
+                            price: data.roomPrice,
+                            baseGuests: data.base_guests || 2,
+                            extraGuestPrice: data.extra_guest_price || 0,
+                            maxOccupancy: data.max_occupancy || 4
                         },
                         checkIn: data.checkIn,
                         checkOut: data.checkOut,

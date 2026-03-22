@@ -54,13 +54,28 @@ function enrichBooking(array $b): array
     $b['createdAt']     = $b['created_at'];
 
     // Rebuild nested objects to mirror Node.js API shape
+    // BUG FIX: Confirmation page needs base_guests, extra_guest_price, and max_occupancy
     $b['room'] = [
         'id'    => $b['room_id'],
         '_id'   => $b['room_id'],
         'type'  => $b['room_type']  ?? '',
         'name'  => $b['room_name']  ?? '',
         'price' => (float)($b['room_price'] ?? 0),
+        'baseGuests' => (int)($b['base_guests'] ?? 1),
+        'extraGuestPrice' => (float)($b['extra_guest_price'] ?? 0),
+        'maxOccupancy' => (int)($b['max_occupancy'] ?? 6)
     ];
+
+    // BUG FIX: Confirmation page needs address, phone, whatsapp for lodge
+    $b['lodge'] = [
+        '_id'    => $b['lodge_id'],
+        'name'   => $b['lodge_name'],
+        'address'=> $b['lodge_address'] ?? '',
+        'phone'  => $b['lodge_phone'] ?? '',
+        'whatsapp' => $b['lodge_whatsapp'] ?? '',
+        'images' => !empty($b['lodge_images']) ? json_decode($b['lodge_images'], true) : []
+    ];
+
     $b['customerDetails'] = [
         'name'     => $b['customer_name'],
         'mobile'   => $b['customer_mobile'],
@@ -162,9 +177,11 @@ if ($method === 'GET' && $rawId !== null) {
     if ($subact === 'invoice') {
         $booking = $db->fetchOne(
             "SELECT b.*, l.name AS lodge_full_name, l.address AS lodge_address,
-                    l.phone AS lodge_phone, l.terms AS lodge_terms
+                    l.phone AS lodge_phone, l.whatsapp AS lodge_whatsapp, l.images AS lodge_images, l.terms AS lodge_terms,
+                    r.base_guests, r.extra_guest_price, r.max_occupancy
              FROM bookings b
              LEFT JOIN lodges l ON l.id = b.lodge_id
+             LEFT JOIN rooms r ON r.id = b.room_id
              WHERE b.booking_id = ? OR b.id = ?",
             [$rawId, is_numeric($rawId) ? (int)$rawId : 0]
         );
@@ -217,10 +234,12 @@ if ($method === 'GET' && $rawId !== null) {
 
     // ---- Single booking ----
     $booking = $db->fetchOne(
-        "SELECT b.*, l.name AS lodge_full_name, l.terms AS lodge_terms,
-                l.phone AS lodge_phone, l.whatsapp AS lodge_whatsapp
+        "SELECT b.*, l.name AS lodge_full_name, l.address AS lodge_address,
+                l.phone AS lodge_phone, l.whatsapp AS lodge_whatsapp, l.images AS lodge_images, l.terms AS lodge_terms,
+                r.base_guests, r.extra_guest_price, r.max_occupancy
          FROM bookings b
          LEFT JOIN lodges l ON l.id = b.lodge_id
+         LEFT JOIN rooms r ON r.id = b.room_id
          WHERE b.booking_id = ? OR b.id = ?",
         [$rawId, is_numeric($rawId) ? (int)$rawId : 0]
     );
