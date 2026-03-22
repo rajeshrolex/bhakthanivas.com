@@ -160,10 +160,9 @@ const BookingConfirmation = () => {
     );
 
     // Determine payment info
-    const paidAmount = amountPaid ?? (paymentMethod !== 'payAtLodge' ? totalPrice : 0);
+    const paidAmount = amountPaid ?? (paymentMethod !== 'payAtLodge' && paymentMethod !== 'pay_at_lodge' ? totalPrice : 0);
     const balanceDue = balanceAmount ?? (totalPrice - paidAmount);
     const isFullyPaid = paidAmount >= (totalPrice - 1); // Allow small rounding diffs
-    const isPayAtLodge = paymentMethod === 'payAtLodge';
 
     const getWhatsAppShareUrl = () => {
         const message = `🙏 Booking Confirmed!\n\n` +
@@ -308,7 +307,7 @@ const BookingConfirmation = () => {
                             <div className="flex items-center justify-between">
                                 <span className="text-gray-600">Payment Method</span>
                                 <span className="font-medium text-gray-900">
-                                    {isPayAtLodge ? 'Pay at Lodge' : 'UPI Payment'}
+                                    {paidAmount > 0 ? 'UPI Payment' : 'Pay at Check-in'}
                                 </span>
                             </div>
 

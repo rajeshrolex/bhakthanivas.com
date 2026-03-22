@@ -624,7 +624,7 @@ const BookingsList = () => {
                                             {selectedBooking.paymentMethod === 'upi' || selectedBooking.paymentMethod === 'online' ? (
                                                 <><CreditCard size={14} /> Online Payment</>
                                             ) : (
-                                                <><Banknote size={14} /> Pay at Lodge (Cash)</>
+                                                <><Banknote size={14} /> Cash / Check-in</>
                                             )}
                                         </span>
                                     </div>

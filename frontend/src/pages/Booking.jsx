@@ -107,8 +107,8 @@ const Booking = () => {
     const handleSubmit = () => {
         if (validateForm()) {
             setCustomerDetails(formData);
-            // Sync payment method with the default payment option ('full' -> 'upi')
-            setPaymentMethod(paymentOption === 'lodge' ? 'payAtLodge' : 'upi');
+            // Default to 'upi' (handled by Razorpay)
+            setPaymentMethod('upi');
             setStep(2);
         }
     };
@@ -164,7 +164,7 @@ const Booking = () => {
                 },
                 (error) => {
                     console.error('Payment failed:', error);
-                    alert('Payment failed. Please try again or select Pay at Lodge.');
+                    alert('Payment failed. Please try again.');
                 }
             );
         }
@@ -475,21 +475,6 @@ const Booking = () => {
                                         </div>
                                         <p className="text-2xl font-bold text-primary-600 mb-1">₹{Math.ceil(totalPrice / 2)}</p>
                                         <p className="text-sm text-gray-500">Pay token amount, balance at lodge</p>
-                                    </button>
-
-                                    <button
-                                        onClick={() => {
-                                            setPaymentOption('lodge');
-                                            handlePaymentSelect('payAtLodge');
-                                        }}
-                                        className={`p-4 border-2 rounded-xl text-left transition-all ${paymentOption === 'lodge' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'}`}
-                                    >
-                                        <div className="flex justify-between items-center mb-2">
-                                            <span className="font-semibold text-gray-800">Pay at Lodge</span>
-                                            {paymentOption === 'lodge' && <Check className="w-5 h-5 text-primary-500" />}
-                                        </div>
-                                        <p className="text-2xl font-bold text-primary-600 mb-1">₹0</p>
-                                        <p className="text-sm text-gray-500">Book now, pay full amount at check-in</p>
                                     </button>
                                 </div>
 
