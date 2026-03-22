@@ -14,8 +14,6 @@ const LodgeForm = ({ lodge, onSave, onClose, isSubmitting }) => {
         distance: '',
         distanceType: 'walkable',
         priceStarting: '',
-        rating: '',
-        reviewCount: '',
         availability: 'available',
         featured: false,
         amenities: [],
@@ -37,8 +35,6 @@ const LodgeForm = ({ lodge, onSave, onClose, isSubmitting }) => {
                 distance: lodge.distance || '',
                 distanceType: lodge.distanceType || 'walkable',
                 priceStarting: lodge.priceStarting || '',
-                rating: lodge.rating || '',
-                reviewCount: lodge.reviewCount || '',
                 availability: lodge.availability || 'available',
                 featured: lodge.featured || false,
                 amenities: lodge.amenities || [],
@@ -163,8 +159,6 @@ const LodgeForm = ({ lodge, onSave, onClose, isSubmitting }) => {
         const dataToSave = {
             ...formData,
             priceStarting: Number(formData.priceStarting),
-            rating: formData.rating ? Number(formData.rating) : 0,
-            reviewCount: formData.reviewCount ? Number(formData.reviewCount) : 0,
             images: formData.images.filter(img => img.trim()),
             rooms: formData.rooms.map(room => {
                 const maxOcc = Number(room.maxOccupancy) || 1;
@@ -346,32 +340,6 @@ const LodgeForm = ({ lodge, onSave, onClose, isSubmitting }) => {
                                     <option value="limited">Limited</option>
                                     <option value="full">Full</option>
                                 </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Rating (0-5)</label>
-                                <input
-                                    type="number"
-                                    name="rating"
-                                    value={formData.rating}
-                                    onChange={handleChange}
-                                    min="0"
-                                    max="5"
-                                    step="0.1"
-                                    placeholder="e.g., 4.5"
-                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Review Count</label>
-                                <input
-                                    type="number"
-                                    name="reviewCount"
-                                    value={formData.reviewCount}
-                                    onChange={handleChange}
-                                    min="0"
-                                    placeholder="e.g., 89"
-                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
-                                />
                             </div>
                             <div className="flex items-center pt-6">
                                 <label className="flex items-center gap-2 cursor-pointer">

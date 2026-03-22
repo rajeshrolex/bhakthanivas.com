@@ -26,8 +26,6 @@ function enrichLodge(array $lodge, Database $db): array
     $lodge['_id']           = $lodge['id'];
     $lodge['priceStarting']= (float)($lodge['price_starting'] ?? 0);
     $lodge['distanceType'] = $lodge['distance_type'] ?? 'walkable';
-    $lodge['reviewCount']  = (int)($lodge['review_count'] ?? 0);
-    $lodge['rating']       = (float)($lodge['rating'] ?? 0);
     $lodge['amenities']    = json_decode($lodge['amenities'] ?? '[]', true) ?? [];
     $lodge['images']       = json_decode($lodge['images']    ?? '[]', true) ?? [];
     $lodge['isBlocked']    = (bool)($lodge['is_blocked'] ?? false);
@@ -164,10 +162,10 @@ if ($method === 'POST' && $id === null) {
 
     $db->query(
         "INSERT INTO lodges
-         (name, slug, tagline, images, distance, distance_type, rating, review_count,
+         (name, slug, tagline, images, distance, distance_type,
           price_starting, availability, featured, amenities, address, phone, whatsapp,
           description, is_blocked, terms)
-         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
         [
             $body['name'],
             $slug,
@@ -175,8 +173,6 @@ if ($method === 'POST' && $id === null) {
             json_encode($body['images']    ?? []),
             $body['distance']     ?? '',
             $body['distanceType'] ?? 'walkable',
-            $body['rating']       ?? 0,
-            $body['reviewCount']  ?? 0,
             $body['priceStarting'],
             $body['availability'] ?? 'available',
             isset($body['featured']) && $body['featured'] ? 1 : 0,

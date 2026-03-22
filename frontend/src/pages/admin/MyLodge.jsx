@@ -135,11 +135,6 @@ const MyLodge = () => {
                             )}
                         </div>
                         <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-1 text-orange-500">
-                                <Star size={18} fill="currentColor" />
-                                <span className="font-bold">{lodge.rating || 'N/A'}</span>
-                                <span className="text-gray-400 text-sm">({lodge.reviewCount || 0} reviews)</span>
-                            </div>
                             <span className={`px-3 py-1 rounded-full text-sm font-medium ${lodge.availability === 'available' ? 'bg-green-100 text-green-700' :
                                 lodge.availability === 'limited' ? 'bg-orange-100 text-orange-700' :
                                     'bg-red-100 text-red-700'

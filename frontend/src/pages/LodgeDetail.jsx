@@ -382,15 +382,6 @@ const LodgeDetail = () => {
                                 </div>
                             </div>
 
-                            {/* Rating & Reviews */}
-                            <div className="flex items-center gap-4 mb-4 pb-4 border-b border-gray-100">
-                                <div className="flex items-center gap-2 bg-green-50 px-3 py-1.5 rounded-lg">
-                                    <Star size={18} className="text-green-600 fill-green-600" />
-                                    <span className="font-semibold text-green-700">{lodge.rating}</span>
-                                </div>
-                                <span className="text-gray-600">{lodge.reviewCount} reviews</span>
-                            </div>
-
                             {/* Description */}
                             <p className="text-gray-600 leading-relaxed">
                                 {lodge.description}
@@ -550,15 +541,6 @@ const LodgeDetail = () => {
                                 Amenities
                             </h2>
                             <AmenityList amenities={lodge.amenities} />
-                        </motion.div>
-
-                        {/* Reviews */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.35 }}
-                        >
-                            <ReviewsSection slug={lodge.slug} />
                         </motion.div>
 
                         {/* Location */}

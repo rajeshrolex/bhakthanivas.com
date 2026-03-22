@@ -35,8 +35,6 @@ export const lodges = [
         ],
         distance: "200m",
         distanceType: "walkable",
-        rating: 4.8,
-        reviewCount: 312,
         priceStarting: 1000,
         availability: "available",
         featured: true,
@@ -86,8 +84,6 @@ export const lodges = [
         ],
         distance: "150m",
         distanceType: "walkable",
-        rating: 4.7,
-        reviewCount: 256,
         priceStarting: 600,
         availability: "available",
         amenities: ["wifi", "parking", "hotWater", "lift", "powerBackup"],
@@ -136,8 +132,6 @@ export const lodges = [
         ],
         distance: "500m",
         distanceType: "walkable",
-        rating: 4.3,
-        reviewCount: 89,
         priceStarting: 500,
         availability: "limited",
         amenities: ["wifi", "parking", "hotWater", "restaurant"],
@@ -177,8 +171,6 @@ export const lodges = [
         ],
         distance: "800m",
         distanceType: "walkable",
-        rating: 4.2,
-        reviewCount: 67,
         priceStarting: 450,
         availability: "available",
         amenities: ["parking", "hotWater", "powerBackup"],
@@ -218,8 +210,6 @@ export const lodges = [
         ],
         distance: "1.2km",
         distanceType: "auto",
-        rating: 4.6,
-        reviewCount: 145,
         priceStarting: 1000,
         availability: "available",
         amenities: ["wifi", "parking", "hotWater", "lift", "ac", "powerBackup", "restaurant"],
@@ -268,8 +258,6 @@ export const lodges = [
         ],
         distance: "1.5km",
         distanceType: "auto",
-        rating: 4.0,
-        reviewCount: 52,
         priceStarting: 550,
         availability: "full",
         amenities: ["parking", "hotWater", "wifi"],
@@ -317,8 +305,6 @@ export const amenityIcons = {
 };
 
 export const sortOptions = [
-    { value: "popularity", label: "Popularity" },
-    { value: "rating", label: "Guest Ratings" },
     { value: "priceLow", label: "Price: Low to High" },
     { value: "priceHigh", label: "Price: High to Low" },
     { value: "distance", label: "Distance from Mutt" }
@@ -372,12 +358,8 @@ export const sortLodges = (lodgeList, sortBy) => {
             return sorted.sort((a, b) => a.priceStarting - b.priceStarting);
         case "priceHigh":
             return sorted.sort((a, b) => b.priceStarting - a.priceStarting);
-        case "rating":
-            return sorted.sort((a, b) => b.rating - a.rating);
-        case "distance":
-            return sorted.sort((a, b) => parseInt(a.distance) - parseInt(b.distance));
         default:
-            return sorted.sort((a, b) => b.reviewCount - a.reviewCount);
+            return sorted;
     }
 };
 export const users = [

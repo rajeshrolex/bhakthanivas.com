@@ -21,8 +21,6 @@ const LodgeCard = ({ lodge, index = 0 }) => {
         images = [],
         distance,
         distanceType,
-        rating,
-        reviewCount,
         priceStarting,
         availability,
         amenities = [],
@@ -102,12 +100,6 @@ const LodgeCard = ({ lodge, index = 0 }) => {
                 {/* Top Badges */}
                 <div className="absolute top-3 left-3 flex flex-col gap-2">
                     {getAvailabilityBadge()}
-                    {rating >= 4.5 && (
-                        <div className="flex items-center gap-1 bg-yellow-400 text-yellow-950 px-2 py-1 rounded-full text-[10px] font-bold shadow-md">
-                            <Star size={10} className="fill-current" />
-                            Trusted by Devotees
-                        </div>
-                    )}
                 </div>
 
                 <div className="absolute top-3 right-3">
@@ -124,16 +116,6 @@ const LodgeCard = ({ lodge, index = 0 }) => {
                     </h3>
                 </div>
 
-                {/* Rating & Reviews */}
-                <div className="flex items-center gap-2 mb-3">
-                    <div className="flex items-center gap-1 bg-green-600 text-white px-1.5 py-0.5 rounded text-xs font-bold">
-                        <span>{rating}</span>
-                        <Star size={10} className="fill-current" />
-                    </div>
-                    <span className="text-xs text-gray-500 font-medium">
-                        ({reviewCount} reviews)
-                    </span>
-                </div>
 
                 {/* Amenities */}
                 <div className="flex items-center gap-2 mb-4">

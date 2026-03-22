@@ -163,9 +163,6 @@ const ManageLodges = () => {
                             </div>
                             <div className="flex items-center justify-between mt-3">
                                 <div className="flex items-center gap-3 text-sm text-gray-500">
-                                    <span className="flex items-center gap-1 text-orange-400 font-medium">
-                                        <Star size={13} fill="currentColor" /> {lodge.rating || 'N/A'}
-                                    </span>
                                     <div className="flex flex-wrap gap-x-3 gap-y-1">
                                         {lodge.rooms?.map(room => (
                                             <span key={room._id} className="text-xs font-semibold text-indigo-600">
@@ -206,7 +203,6 @@ const ManageLodges = () => {
                             <tr>
                                 <th className="px-6 py-4">Lodge Name</th>
                                 <th className="px-6 py-4">Location</th>
-                                <th className="px-6 py-4">Rating</th>
                                 <th className="px-6 py-4">Room Prices</th>
                                 <th className="px-6 py-4">Status</th>
                                 <th className="px-6 py-4 text-right">Actions</th>
@@ -225,13 +221,6 @@ const ManageLodges = () => {
                                                 <MapPin size={14} />
                                                 <span className="text-sm truncate max-w-[150px]">{lodge.address}</span>
                                             </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-1 text-orange-400 font-medium">
-                                                <Star size={14} fill="currentColor" />
-                                                {lodge.rating || 'N/A'}
-                                            </div>
-                                            <div className="text-xs text-gray-400">({lodge.reviewCount || 0} reviews)</div>
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col gap-1">

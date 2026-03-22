@@ -109,15 +109,6 @@ if ($method === 'POST' && !is_numeric($idOrSlug)) {
     $review['_id']       = $review['id'];
     $review['createdAt'] = $review['created_at'];
 
-    // Recalculate lodge rating and review count (matches Node.js behavior)
-    $stats = $db->fetchOne(
-        "SELECT COUNT(*) AS total, AVG(rating) AS avg_rating FROM reviews WHERE lodge_id = ?",
-        [(int)$lodge['id']]
-    );
-    $db->query(
-        "UPDATE lodges SET rating = ?, review_count = ? WHERE id = ?",
-        [round((float)$stats['avg_rating'], 1), (int)$stats['total'], (int)$lodge['id']]
-    );
 
     jsonResponse(['success' => true, 'review' => $review], 201);
 }
@@ -134,15 +125,6 @@ if ($method === 'DELETE' && $idOrSlug !== null && is_numeric($idOrSlug)) {
 
     $db->query("DELETE FROM reviews WHERE id = ?", [$id]);
 
-    // Recalculate lodge rating after deletion
-    $stats = $db->fetchOne(
-        "SELECT COUNT(*) AS total, COALESCE(AVG(rating), 0) AS avg_rating FROM reviews WHERE lodge_id = ?",
-        [$lodgeId]
-    );
-    $db->query(
-        "UPDATE lodges SET rating = ?, review_count = ? WHERE id = ?",
-        [round((float)$stats['avg_rating'], 1), (int)$stats['total'], $lodgeId]
-    );
 
     jsonResponse(['success' => true, 'message' => 'Review deleted']);
 }

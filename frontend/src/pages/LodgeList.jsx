@@ -22,7 +22,7 @@ const LodgeList = () => {
     const { setGuests, setRooms, bookingData } = useBooking();
     const [lodges, setLodges] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [sortBy, setSortBy] = useState('popularity');
+    const [sortBy, setSortBy] = useState('priceLow');
     const [showFilters, setShowFilters] = useState(false);
     const [showSortDropdown, setShowSortDropdown] = useState(false);
     const [viewMode, setViewMode] = useState('grid');
@@ -119,14 +119,11 @@ const LodgeList = () => {
             case 'priceHigh':
                 result.sort((a, b) => b.priceStarting - a.priceStarting);
                 break;
-            case 'rating':
-                result.sort((a, b) => b.rating - a.rating);
-                break;
             case 'distance':
                 result.sort((a, b) => parseInt(a.distance) - parseInt(b.distance));
                 break;
             default:
-                result.sort((a, b) => b.reviewCount - a.reviewCount);
+                // No sort
         }
 
         return result;
