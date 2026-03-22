@@ -38,7 +38,7 @@ jobs:
       - name: 📡 Upload to Hostinger via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
-          server: bhakthanivas.com
+          server: 145.79.213.144
           username: u882069120.bhakthanivas.com
           password: Sandanithin@2026
           local-dir: ./frontend/dist/
