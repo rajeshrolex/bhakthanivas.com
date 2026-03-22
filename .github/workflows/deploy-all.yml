@@ -32,7 +32,7 @@ jobs:
       - name: 🏗️ Build Frontend
         working-directory: frontend
         run: |
-          echo "VITE_API_URL=https://deeppink-aardvark-943779.hostingersite.com/api" > .env
+          echo "VITE_API_URL=https://bhakthanivas.com/api" > .env
           npm install
           npm run build
 
@@ -85,7 +85,7 @@ jobs:
           DB_USER=u882069120_bhakthanivas
           DB_PASS=Sandanithin@2026
           APP_ENV=production
-          BASE_URL=https://deeppink-aardvark-943779.hostingersite.com
+          BASE_URL=https://bhakthanivas.com
           JWT_SECRET=mantralayam_super_secure_jwt_secret_key_2026_bhaktanivas_production_long_secret
           JWT_EXPIRY=86400
           RAZORPAY_KEY_ID=rzp_test_SDLqt0o7HljyuM

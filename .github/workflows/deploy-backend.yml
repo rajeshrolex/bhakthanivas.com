@@ -43,7 +43,7 @@ jobs:
           DB_USER=u882069120_bhakthanivas
           DB_PASS=Sandanithin@2026
           APP_ENV=production
-          BASE_URL=https://deeppink-aardvark-943779.hostingersite.com
+          BASE_URL=https://bhakthanivas.com
           JWT_SECRET=mantralayam_jwt_secret_2026
           JWT_EXPIRY=86400
           RAZORPAY_KEY_ID=rzp_test_SDLqt0o7HljyuM
