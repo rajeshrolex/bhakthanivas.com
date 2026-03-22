@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useBooking } from '../context/BookingContext';
-import { formatTo12Hour, calculateCheckOutTime } from '../utils/timeUtils';
+import { formatTo12Hour, calculateCheckOutTime, parseSafeDate } from '../utils/timeUtils';
 import { getImageUrl, bookingAPI } from '../services/api';
 
 const BookingConfirmation = () => {
@@ -138,13 +138,13 @@ const BookingConfirmation = () => {
     } = bookingData;
 
     const totalNights = checkIn && checkOut
-        ? Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24))
+        ? Math.ceil((parseSafeDate(checkOut) - parseSafeDate(checkIn)) / (1000 * 60 * 60 * 24))
         : 1;
 
     // Auto-calculate checkout time = check-in time + 23 hours per night
     const computedCheckOut = calculateCheckOutTime(checkIn || new Date().toISOString(), checkInTime || '12:00', checkOut || null);
     const displayCheckOutTime = checkOutTime || computedCheckOut.checkOutTime;
-    const displayCheckOutDate = checkOut ? format(new Date(checkOut + 'T00:00:00'), 'dd MMM yyyy') : 'Tomorrow';
+    const displayCheckOutDate = checkOut ? format(parseSafeDate(checkOut), 'dd MMM yyyy') : 'Tomorrow';
 
 
     const baseGuests = selectedRoom.baseGuests || selectedRoom.maxOccupancy || 1;
@@ -170,7 +170,7 @@ const BookingConfirmation = () => {
             `📋 Booking ID: ${bookingId}\n` +
             `🏨 ${selectedLodge.name}\n` +
             `🛏️ ${selectedRoom.name}\n` +
-            `📅 ${checkIn ? format(new Date(checkIn), 'dd MMM yyyy') : 'Today'} - ${checkOut ? format(new Date(checkOut), 'dd MMM yyyy') : 'Tomorrow'}\n` +
+            `📅 ${checkIn ? format(parseSafeDate(checkIn), 'dd MMM yyyy') : 'Today'} - ${checkOut ? format(parseSafeDate(checkOut), 'dd MMM yyyy') : 'Tomorrow'}\n` +
             `💰 Total: ₹${totalPrice}` +
             (paidAmount > 0 && balanceDue > 0 ? ` (Paid: ₹${paidAmount}, Balance: ₹${balanceDue})` : '') +
             `\n\n📍 Location: Near Sri Raghavendra Swamy Mutt, Mantralayam`;
@@ -266,7 +266,7 @@ const BookingConfirmation = () => {
                                 <div>
                                     <p className="text-xs text-gray-500">Check-in</p>
                                     <p className="font-medium text-gray-900">
-                                        {checkIn ? format(new Date(checkIn), 'dd MMM yyyy') : 'Today'}
+                                        {checkIn ? format(parseSafeDate(checkIn), 'dd MMM yyyy') : 'Today'}
                                     </p>
                                     <p className="text-xs text-primary-600 flex items-center gap-1">
                                         <Clock size={12} />

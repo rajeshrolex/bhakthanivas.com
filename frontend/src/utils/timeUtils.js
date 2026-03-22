@@ -22,6 +22,31 @@ export const formatTo12Hour = (timeStr) => {
 };
 
 /**
+ * Safely parses a date string or Date object into a local Date at midnight.
+ * Prevents "one day off" errors caused by UTC/Local time conversions.
+ * @param {string|Date} d - Date input.
+ * @returns {Date} Date object at local midnight.
+ */
+export const parseSafeDate = (d) => {
+    if (!d) return new Date();
+    if (d instanceof Date) return d;
+    
+    try {
+        // Extract YYYY-MM-DD part only
+        const datePart = d.toString().split('T')[0];
+        const [year, month, day] = datePart.split('-').map(Number);
+        
+        if (!year || !month || !day) return new Date(d); // Fallback
+        
+        // Month is 0-indexed in JS Date constructor
+        return new Date(year, month - 1, day);
+    } catch (e) {
+        console.error('Error in parseSafeDate:', e);
+        return new Date(d);
+    }
+};
+
+/**
  * Calculates checkout date and time.
  * For single-night: adds 23 hours from check-in.
  * For multi-night: stay is (nights * 24 - 1) hours, so checkout is always
@@ -37,16 +62,14 @@ export const calculateCheckOutTime = (checkInDate, checkInTime = '12:00', checkO
         const [hours, minutes] = checkInTime.split(':').map(Number);
 
         // Build a Date from the checkIn date with the checkIn time applied
-        const checkIn = new Date(checkInDate);
+        const checkIn = parseSafeDate(checkInDate);
         checkIn.setHours(hours, minutes, 0, 0);
 
         // Determine number of nights
         let nights = 1;
         if (checkOutDate) {
-            const coDay = new Date(checkOutDate);
-            coDay.setHours(0, 0, 0, 0);
-            const ciDay = new Date(checkInDate);
-            ciDay.setHours(0, 0, 0, 0);
+            const coDay = parseSafeDate(checkOutDate);
+            const ciDay = parseSafeDate(checkInDate);
             const diffNights = Math.round((coDay - ciDay) / (1000 * 60 * 60 * 24));
             if (diffNights > 0) nights = diffNights;
         }
