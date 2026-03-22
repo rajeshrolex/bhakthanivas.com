@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-    CheckCircle,
+    Check,
     MapPin,
     Calendar,
     Users,
@@ -188,8 +188,8 @@ const BookingConfirmation = () => {
                     className="text-center mb-8"
                 >
                     <div className="w-20 h-20 sm:w-24 sm:h-24 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-                        <CheckCircle size={40} className="text-white sm:hidden" />
-                        <CheckCircle size={48} className="text-white hidden sm:block" />
+                        <Check size={40} className="text-white sm:hidden" />
+                        <Check size={48} className="text-white hidden sm:block" />
                     </div>
                     <motion.h1
                         initial={{ opacity: 0, y: 20 }}

@@ -97,6 +97,27 @@ function formatDate(string $date): string
 if ($method === 'GET' && $rawId === null) {
     requireAuth();
 
+    // --- Auto-Checkout Logic ---
+    try {
+        $checkedInBookings = $db->fetchAll(
+            "SELECT id, check_in, check_in_time, check_out FROM bookings WHERE status = 'checked-in'"
+        );
+        $currentTime = time();
+        foreach ($checkedInBookings as $b) {
+            $co = TimeUtils::calculateCheckOutTime(
+                $b['check_in'], 
+                $b['check_in_time'] ?? '12:00', 
+                $b['check_out']
+            );
+            $coDateTimeStr = $co['checkOutDate'] . ' ' . $co['checkOutTime'] . ':00';
+            if (strtotime($coDateTimeStr) <= $currentTime) {
+                $db->query("UPDATE bookings SET status = 'checked-out' WHERE id = ?", [$b['id']]);
+            }
+        }
+    } catch (\Throwable $e) {
+        error_log('Auto-checkout error: ' . $e->getMessage());
+    }
+
     $where  = [];
     $params = [];
 
