@@ -7,11 +7,31 @@ export const useRazorpay = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
+    const loadRazorpayScript = () => {
+        return new Promise((resolve) => {
+            if (window.Razorpay) {
+                resolve(true);
+                return;
+            }
+            const script = document.createElement('script');
+            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+            script.onload = () => resolve(true);
+            script.onerror = () => resolve(false);
+            document.body.appendChild(script);
+        });
+    };
+
     const initiatePayment = async (bookingDetails, onSuccess, onFailure) => {
         setLoading(true);
         setError(null);
 
         try {
+            // Load Razorpay script first
+            const isScriptLoaded = await loadRazorpayScript();
+            if (!isScriptLoaded) {
+                throw new Error('Razorpay SDK failed to load. Are you online?');
+            }
+
             // Create order on backend
             const orderResponse = await paymentAPI.createOrder({
                 amount: bookingDetails.totalAmount,
