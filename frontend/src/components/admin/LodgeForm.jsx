@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Plus, Trash2, Loader2, Image } from 'lucide-react';
-import { uploadAPI, BASE_URL, getImageUrl } from '../../services/api';
+import { uploadAPI, getImageUrl } from '../../services/api';
 
 const LodgeForm = ({ lodge, onSave, onClose, isSubmitting }) => {
     const [formData, setFormData] = useState({
@@ -105,9 +105,9 @@ const LodgeForm = ({ lodge, onSave, onClose, isSubmitting }) => {
             setUploadingIndex(index);
             const result = await uploadAPI.uploadImage(file);
 
-            // Use the full URL for the image
-            const imageUrl = `${BASE_URL}${result.imageUrl}`;
-            handleImageChange(index, imageUrl);
+            // Store only the relative path (e.g. 'uploads/...')
+            // getImageUrl() will handle the prefixing when displaying
+            handleImageChange(index, result.imageUrl);
         } catch (error) {
             console.error('Upload error:', error);
             alert('Failed to upload image: ' + error.message);

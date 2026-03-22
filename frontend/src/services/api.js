@@ -14,30 +14,39 @@ export const API_BASE_URL =
     import.meta.env.VITE_API_URL ||
     (isLocalhost ? `http://${window.location.hostname}:5000/api` : '/api');
 
-// ── Helper: build full image URL ─────────────────────────────────────────────
+/// ── Helper: build full image URL ─────────────────────────────────────────────
 export const getImageUrl = (path) => {
     if (!path) return 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22300%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22400%22%20height%3D%22300%22%20fill%3D%22%23eeeeee%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%23999999%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fsvg%3E';
-    if (path.startsWith('http')) return path;
     
-    // 1. Derive root URL (remove /api and trailing slash)
-    const root = (API_BASE_URL || '').replace(/\/api$/, '').replace(/\/+$/, '');
-    
-    // 2. Clean the path (remove leading slash)
-    const cleanPath = path.replace(/^\/+/, '');
-    
-    // 3. Construct full URL with exactly one slash separator
-    let fullUrl = `${root}/${cleanPath}`;
-    
-    // 4. Forceful check for protocol-relative or root-relative issues
-    if (fullUrl.startsWith('//') && !(API_BASE_URL || '').startsWith('//')) {
-        fullUrl = '/' + fullUrl.replace(/^\/+/, '');
+    // If it's already a full URL, ensure it doesn't have the .comuploads or apiuploads bug
+    if (path.toString().startsWith('http')) {
+        return path.toString()
+            .replace(/\.comuploads/g, '.com/uploads')
+            .replace(/apiuploads/g, 'api/uploads');
     }
 
-    // 5. Safety net for the "comuploads" issue seen on the live site
-    if (fullUrl.includes('.comuploads')) {
-        fullUrl = fullUrl.replace('.comuploads', '.com/uploads');
-    }
+    // 1. Derive root URL (remove /api/ or /api from the end accurately)
+    // We want the domain part without the /api suffix
+    const root = (API_BASE_URL || '').replace(/\/api\/?$/, '').replace(/\/+$/, '');
     
+    // 2. Clean the path (remove leading slash and any redundant 'api/' if it leaked in)
+    let cleanPath = path.toString().replace(/^\/+/, '');
+    
+    // 3. Construct full URL with exactly one slash separator
+    let fullUrl = root ? `${root}/${cleanPath}` : `/${cleanPath}`;
+    
+    // 4. Final safety pass for common malformations seen on live site
+    // Handles .comuploads, apiuploads, and missed slashes
+    fullUrl = fullUrl
+        .replace(/\.comuploads/g, '.com/uploads')
+        .replace(/apiuploads/g, 'api/uploads')
+        .replace(/\/+uploads\//g, '/uploads/'); // Normalize double slashes around uploads
+    
+    // 5. Forceful check for protocol-relative issues if not on localhost
+    if (fullUrl.startsWith('//') && !isLocalhost) {
+        fullUrl = 'https:' + fullUrl;
+    }
+
     return fullUrl;
 };
 

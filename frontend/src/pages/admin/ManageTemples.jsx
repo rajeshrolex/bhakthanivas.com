@@ -15,7 +15,7 @@ import {
     Upload,
     AlertCircle
 } from 'lucide-react';
-import { templeAPI, uploadAPI, BASE_URL, getImageUrl } from '../../services/api';
+import { templeAPI, uploadAPI, getImageUrl, systemAPI } from '../../services/api';
 
 const emptyTemple = {
     name: '',
@@ -91,10 +91,11 @@ const ManageTemples = () => {
         try {
             const result = await uploadAPI.uploadImage(file);
             if (result && result.imageUrl) {
-                const imageUrl = result.imageUrl.startsWith('http') ? result.imageUrl : `${BASE_URL}${result.imageUrl}`;
+                // Store only the relative path (e.g. 'uploads/...')
+                // getImageUrl() will handle the prefixing when displaying
                 setFormData(prev => ({
                     ...prev,
-                    images: [...prev.images, imageUrl]
+                    images: [...prev.images, result.imageUrl]
                 }));
             } else {
                 throw new Error('Invalid response from server');
