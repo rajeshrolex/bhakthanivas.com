@@ -1,0 +1,15 @@
+{
+  "lodgeId": 1,
+  "roomId": 19,
+  "checkIn": "2026-03-25",
+  "checkOut": "2026-03-26",
+  "guests": 2,
+  "rooms": 1,
+  "customerName": "Test Booking",
+  "customerMobile": "9999999999",
+  "customerEmail": "test@test.com",
+  "idType": "aadhar",
+  "idNumber": "123412341234",
+  "paymentMethod": "payAtLodge",
+  "totalAmount": 800
+}

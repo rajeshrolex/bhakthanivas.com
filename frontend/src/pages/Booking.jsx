@@ -10,6 +10,7 @@ import {
     Building2,
     ChevronLeft,
     Check,
+    CheckCircle2,
     Shield,
     Clock
 } from 'lucide-react';
