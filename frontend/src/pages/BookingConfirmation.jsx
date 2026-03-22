@@ -130,12 +130,16 @@ const BookingConfirmation = () => {
         checkInTime,
         checkOutTime,
         guests,
-        customerDetails,
+        customerDetails = {},
         paymentMethod,
         bookingId,
         amountPaid,
         balanceAmount
     } = bookingData;
+
+    // Safety: ensure room and lodge are at least empty objects to avoid property access errors
+    const lodge = selectedLodge || {};
+    const room = selectedRoom || {};
 
     const totalNights = checkIn && checkOut
         ? Math.ceil((parseSafeDate(checkOut) - parseSafeDate(checkIn)) / (1000 * 60 * 60 * 24))
@@ -147,28 +151,31 @@ const BookingConfirmation = () => {
     const displayCheckOutDate = checkOut ? format(parseSafeDate(checkOut), 'dd MMM yyyy') : 'Tomorrow';
 
 
-    const baseGuests = selectedRoom.baseGuests || selectedRoom.maxOccupancy || 1;
-    const extraGuestPrice = selectedRoom.extraGuestPrice || 0;
-    const extraGuests = Math.max(0, (guests || 1) - baseGuests);
-    const perNightPrice = selectedRoom.price + extraGuests * extraGuestPrice;
+    const baseGuestsNum = room.baseGuests || room.maxOccupancy || 1;
+    const extraPrice = room.extraGuestPrice || 0;
+    const extraCount = Math.max(0, (guests || 1) - baseGuestsNum);
+    const roomPrice = Number(room.price) || 0;
+    const perNightPrice = roomPrice + extraCount * extraPrice;
     
     // Use the stored totalAmount if available, otherwise recalculate (with _stayTotal fallback)
-    const totalPrice = bookingData.totalAmount || (
-        selectedRoom._stayTotal != null 
-            ? selectedRoom._stayTotal 
-            : perNightPrice * totalNights
+    const totalPrice = Number(bookingData.totalAmount) || (
+        room._stayTotal != null 
+            ? Number(room._stayTotal) 
+            : perNightPrice * (totalNights || 1)
     );
 
+    const isPayAtLodge = paymentMethod === 'payAtLodge' || paymentMethod === 'pay_at_lodge';
+
     // Determine payment info
-    const paidAmount = amountPaid ?? (paymentMethod !== 'payAtLodge' && paymentMethod !== 'pay_at_lodge' ? totalPrice : 0);
-    const balanceDue = balanceAmount ?? (totalPrice - paidAmount);
+    const paidAmount = Number(amountPaid ?? (!isPayAtLodge ? totalPrice : 0)) || 0;
+    const balanceDue = Number(balanceAmount ?? (totalPrice - paidAmount)) || 0;
     const isFullyPaid = paidAmount >= (totalPrice - 1); // Allow small rounding diffs
 
     const getWhatsAppShareUrl = () => {
         const message = `🙏 Booking Confirmed!\n\n` +
             `📋 Booking ID: ${bookingId}\n` +
-            `🏨 ${selectedLodge.name}\n` +
-            `🛏️ ${selectedRoom.name}\n` +
+            `🏨 ${lodge.name}\n` +
+            `🛏️ ${room.name}\n` +
             `📅 ${checkIn ? format(parseSafeDate(checkIn), 'dd MMM yyyy') : 'Today'} - ${checkOut ? format(parseSafeDate(checkOut), 'dd MMM yyyy') : 'Tomorrow'}\n` +
             `💰 Total: ₹${totalPrice}` +
             (paidAmount > 0 && balanceDue > 0 ? ` (Paid: ₹${paidAmount}, Balance: ₹${balanceDue})` : '') +
@@ -178,7 +185,7 @@ const BookingConfirmation = () => {
     };
 
     const getGoogleMapsUrl = () => {
-        return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedLodge.address + ' Mantralayam')}`;
+        return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((lodge.address || '') + ' Mantralayam')}`;
     };
 
     return (
@@ -228,7 +235,7 @@ const BookingConfirmation = () => {
                         </div>
                         <div className="flex items-center gap-4">
                             <img
-                                src={getImageUrl(selectedLodge.images[0])}
+                                src={getImageUrl((lodge.images || [])[0])}
                                 alt="Lodge Photo"
                                 className="w-16 h-16 rounded-xl object-cover"
 
@@ -238,8 +245,8 @@ const BookingConfirmation = () => {
                                 }}
                             />
                             <div>
-                                <h2 className="font-bold text-lg sm:text-xl">{selectedLodge.name}</h2>
-                                <p className="text-white/80">{selectedRoom.name}</p>
+                                <h2 className="font-bold text-lg sm:text-xl">{lodge.name}</h2>
+                                <p className="text-white/80">{room.name}</p>
                             </div>
                         </div>
                     </div>
@@ -353,7 +360,7 @@ const BookingConfirmation = () => {
                         <div className="pt-4">
                             <p className="flex items-start gap-2 text-gray-600 mb-3">
                                 <MapPin size={18} className="text-primary-500 mt-0.5 flex-shrink-0" />
-                                <span>{selectedLodge.address}</span>
+                                <span>{lodge.address}</span>
                             </p>
                             <a
                                 href={getGoogleMapsUrl()}
@@ -371,14 +378,14 @@ const BookingConfirmation = () => {
                     <div className="p-4 sm:p-6 bg-gray-50 space-y-3">
                         <div className="grid grid-cols-2 gap-2 sm:gap-3">
                             <a
-                                href={`tel:${selectedLodge.phone}`}
+                                href={`tel:${lodge.phone}`}
                                 className="btn-call py-3 justify-center"
                             >
                                 <Phone size={18} />
                                 Call Lodge
                             </a>
                             <a
-                                href={`https://wa.me/${selectedLodge.whatsapp?.replace(/[^0-9]/g, '')}?text=Hi, my booking ID is ${bookingId}. I have booked ${selectedRoom.name}.`}
+                                href={`https://wa.me/${(lodge.whatsapp || '').replace(/[^0-9]/g, '')}?text=Hi, my booking ID is ${bookingId}. I have booked ${room.name}.`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="btn-whatsapp py-3 justify-center"
