@@ -14,31 +14,28 @@ export const API_BASE_URL =
     import.meta.env.VITE_API_URL ||
     (isLocalhost ? `http://${window.location.hostname}:5000/api` : '/api');
 
-export const BASE_URL = API_BASE_URL;
-
 // ── Helper: build full image URL ─────────────────────────────────────────────
 export const getImageUrl = (path) => {
     if (!path) return 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22300%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22400%22%20height%3D%22300%22%20fill%3D%22%23eeeeee%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%23999999%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fsvg%3E';
     if (path.startsWith('http')) return path;
     
-    // 1. Clean the path: remove leading slashes
-    let cleanPath = path.replace(/^\/+/, '');
+    // 1. Derive root URL (remove /api and trailing slash)
+    const root = (API_BASE_URL || '').replace(/\/api$/, '').replace(/\/+$/, '');
     
-    // 2. Clean the base URL: remove trailing slashes
-    let baseUrl = (BASE_URL || '').replace(/\/+$/, '');
+    // 2. Clean the path (remove leading slash)
+    const cleanPath = path.replace(/^\/+/, '');
     
-    // 3. Special case: if baseUrl is just a domain without a path (e.g. "https://example.com"),
-    // but the path doesn't start with a slash, we MUST ensure a slash exists.
-    // If baseUrl is empty, it becomes a root-relative path (e.g. "/uploads")
+    // 3. Construct full URL with exactly one slash separator
+    let fullUrl = `${root}/${cleanPath}`;
     
-    // 4. Forceful check: If for some reason the concatenated result would be "domainuploads", fix it.
-    // This is a safety net for the "comuploads" issue seen on the live site.
-    let fullUrl = `${baseUrl}/${cleanPath}`;
-    
-    // If it's a protocol-relative double slash "//", it might be interpreted as a hostname.
-    // Ensure we don't start with "//" unless it's intended.
-    if (fullUrl.startsWith('//') && !baseUrl.startsWith('//')) {
+    // 4. Forceful check for protocol-relative or root-relative issues
+    if (fullUrl.startsWith('//') && !(API_BASE_URL || '').startsWith('//')) {
         fullUrl = '/' + fullUrl.replace(/^\/+/, '');
+    }
+
+    // 5. Safety net for the "comuploads" issue seen on the live site
+    if (fullUrl.includes('.comuploads')) {
+        fullUrl = fullUrl.replace('.comuploads', '.com/uploads');
     }
     
     return fullUrl;
