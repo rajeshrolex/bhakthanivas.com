@@ -10,7 +10,6 @@ import {
     Building2,
     ChevronLeft,
     Check,
-    CheckCircle2,
     Shield,
     Clock
 } from 'lucide-react';
@@ -457,7 +456,7 @@ const Booking = () => {
                                     >
                                         <div className="flex justify-between items-center mb-2">
                                             <span className="font-semibold text-gray-800">Full Payment</span>
-                                            {paymentOption === 'full' && <CheckCircle2 className="w-5 h-5 text-primary-500" />}
+                                            {paymentOption === 'full' && <Check className="w-5 h-5 text-primary-500" />}
                                         </div>
                                         <p className="text-2xl font-bold text-primary-600 mb-1">₹{totalPrice}</p>
                                         <p className="text-sm text-gray-500">Pay full amount now to confirm booking</p>
@@ -472,7 +471,7 @@ const Booking = () => {
                                     >
                                         <div className="flex justify-between items-center mb-2">
                                             <span className="font-semibold text-gray-800">Partial Payment</span>
-                                            {paymentOption === 'partial' && <CheckCircle2 className="w-5 h-5 text-primary-500" />}
+                                            {paymentOption === 'partial' && <Check className="w-5 h-5 text-primary-500" />}
                                         </div>
                                         <p className="text-2xl font-bold text-primary-600 mb-1">₹{Math.ceil(totalPrice / 2)}</p>
                                         <p className="text-sm text-gray-500">Pay token amount, balance at lodge</p>
@@ -487,7 +486,7 @@ const Booking = () => {
                                     >
                                         <div className="flex justify-between items-center mb-2">
                                             <span className="font-semibold text-gray-800">Pay at Lodge</span>
-                                            {paymentOption === 'lodge' && <CheckCircle2 className="w-5 h-5 text-primary-500" />}
+                                            {paymentOption === 'lodge' && <Check className="w-5 h-5 text-primary-500" />}
                                         </div>
                                         <p className="text-2xl font-bold text-primary-600 mb-1">₹0</p>
                                         <p className="text-sm text-gray-500">Book now, pay full amount at check-in</p>
