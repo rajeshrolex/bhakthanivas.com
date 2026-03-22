@@ -389,7 +389,7 @@ const ManageTemples = () => {
                             <div className="flex flex-wrap gap-3 mb-3">
                                 {formData.images.map((img, i) => (
                                     <div key={i} className="relative w-24 h-24 rounded-lg overflow-hidden border group">
-                                        <img src={img} alt={`Temple ${i + 1}`} className="w-full h-full object-cover" />
+                                        <img src={getImageUrl(img)} alt={`Temple ${i + 1}`} className="w-full h-full object-cover" />
                                         <button
                                             type="button"
                                             onClick={() => removeImage(i)}
@@ -471,7 +471,7 @@ const ManageTemples = () => {
                                                         className="w-16 h-16 rounded-lg object-cover flex-shrink-0 border"
                                                         onError={(e) => {
                                                             e.target.onerror = null;
-                                                            e.target.src = 'https://via.placeholder.com/400x300?text=No+Image';
+                                                            e.target.src = 'https://placehold.co/400x300?text=No+Image';
                                                         }}
                                                     />
                                                 ) : (

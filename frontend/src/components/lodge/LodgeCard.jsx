@@ -92,7 +92,7 @@ const LodgeCard = ({ lodge, index = 0 }) => {
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     onError={(e) => {
                         e.target.onerror = null;
-                        e.target.src = 'https://via.placeholder.com/400x300?text=No+Image';
+                        e.target.src = 'https://placehold.co/400x300?text=No+Image';
                     }}
                 />
 

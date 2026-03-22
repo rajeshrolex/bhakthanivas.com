@@ -528,7 +528,7 @@ const Booking = () => {
                                     className="w-20 h-20 object-cover rounded-xl"
                                     onError={(e) => {
                                         e.target.onerror = null;
-                                        e.target.src = 'https://via.placeholder.com/400x300?text=No+Image';
+                                        e.target.src = 'https://placehold.co/400x300?text=No+Image';
                                     }}
                                 />
                                 <div>

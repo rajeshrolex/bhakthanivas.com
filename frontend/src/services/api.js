@@ -18,7 +18,7 @@ export const BASE_URL = API_BASE_URL;
 
 // ── Helper: build full image URL ─────────────────────────────────────────────
 export const getImageUrl = (path) => {
-    if (!path) return 'https://via.placeholder.com/400x300?text=No+Image';
+    if (!path) return 'https://placehold.co/400x300?text=No+Image';
     if (path.startsWith('http')) return path;
     
     // 1. Clean the path: remove leading slashes

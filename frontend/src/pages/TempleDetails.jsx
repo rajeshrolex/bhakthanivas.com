@@ -101,7 +101,7 @@ const TempleDetails = () => {
                                     className="w-full h-full object-cover"
                                     onError={(e) => {
                                         e.target.onerror = null;
-                                        e.target.src = 'https://via.placeholder.com/400x300?text=No+Image';
+                                        e.target.src = 'https://placehold.co/400x300?text=No+Image';
                                     }}
                                 />
                                 {temple.images.length > 1 && (

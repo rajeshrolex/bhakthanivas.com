@@ -52,7 +52,7 @@ const PhotoGallery = ({ images = [], lodgeName }) => {
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         onError={(e) => {
                             e.target.onerror = null;
-                            e.target.src = 'https://via.placeholder.com/400x300?text=No+Image';
+                            e.target.src = 'https://placehold.co/400x300?text=No+Image';
                         }}
                     />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
@@ -74,7 +74,7 @@ const PhotoGallery = ({ images = [], lodgeName }) => {
                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                 onError={(e) => {
                                     e.target.onerror = null;
-                                    e.target.src = 'https://via.placeholder.com/400x300?text=No+Image';
+                                    e.target.src = 'https://placehold.co/400x300?text=No+Image';
                                 }}
                             />
                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
@@ -145,7 +145,7 @@ const PhotoGallery = ({ images = [], lodgeName }) => {
                             onClick={(e) => e.stopPropagation()}
                             onError={(e) => {
                                 e.target.onerror = null;
-                                e.target.src = 'https://via.placeholder.com/800x600?text=No+Image';
+                                e.target.src = 'https://placehold.co/800x600?text=No+Image';
                             }}
                         />
 
@@ -174,7 +174,7 @@ const PhotoGallery = ({ images = [], lodgeName }) => {
                                         className="w-full h-full object-cover"
                                         onError={(e) => {
                                             e.target.onerror = null;
-                                            e.target.src = 'https://via.placeholder.com/400x300?text=No+Image';
+                                            e.target.src = 'https://placehold.co/400x300?text=No+Image';
                                         }}
                                     />
                                 </button>
