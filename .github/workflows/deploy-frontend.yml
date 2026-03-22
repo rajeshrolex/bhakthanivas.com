@@ -39,7 +39,7 @@ jobs:
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: 145.79.213.144
-          username: u882069120.bhakthanivas.com
+          username: u882069120
           password: Sandanithin@2026
           local-dir: ./frontend/dist/
           server-dir: /public_html/
