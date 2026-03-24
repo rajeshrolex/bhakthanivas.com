@@ -35,19 +35,25 @@ export const getImageUrl = (path) => {
     // 3. Construct full URL with exactly one slash separator
     let fullUrl = root ? `${root}/${cleanPath}` : `/${cleanPath}`;
     
-    // PRODUCTION FIX: If we are on production (root is empty/relative) and 
-    // the path starts with 'uploads/', we need to prefix with 'php-backend/'
-    // because that's where the PHP files and their 'uploads' folder live.
-    if (!isLocalhost && !root && cleanPath.startsWith('uploads/')) {
-        fullUrl = `/php-backend/${cleanPath}`;
-    }
-    
     // 4. Final safety pass for common malformations seen on live site
-    // Handles .comuploads, apiuploads, and missed slashes
+    // On production, internal paths like 'uploads/...' MUST go through 'php-backend/'
+    if (!isLocalhost) {
+        // Fix: .com/uploads -> .com/php-backend/uploads
+        // Fix: /uploads -> /php-backend/uploads
+        if (fullUrl.includes('/uploads/')) {
+            fullUrl = fullUrl.replace(/\/uploads\//g, '/php-backend/uploads/');
+        }
+        // Handle cases where uploads/ is at the start of a relative-looking path
+        else if (cleanPath.startsWith('uploads/')) {
+            fullUrl = `/php-backend/${cleanPath}`;
+        }
+    }
+
     fullUrl = fullUrl
-        .replace(/\.comuploads/g, '.com/uploads')
+        .replace(/\.comuploads/g, '.com/php-backend/uploads')
         .replace(/apiuploads/g, 'api/uploads')
-        .replace(/\/+uploads\//g, '/uploads/'); // Normalize double slashes around uploads
+        .replace(/\/+uploads\//g, '/php-backend/uploads/') // Normalize and ensure backend prefix
+        .replace(/\/php-backend\/php-backend\//g, '/php-backend/'); // Prevent double prefix
     
     // 5. Forceful check for protocol-relative issues if not on localhost
     if (fullUrl.startsWith('//') && !isLocalhost) {
