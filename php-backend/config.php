@@ -35,6 +35,8 @@ define('BASE_URL', rtrim($_ENV['BASE_URL'] ?? $_SERVER['BASE_URL'] ?? 'http://lo
 
 $jwtSecret = $_ENV['JWT_SECRET'] ?? $_SERVER['JWT_SECRET'] ?? '';
 if (strlen($jwtSecret) < 32) {
+    // Log this for debugging (but don't expose in response)
+    error_log("JWT_SECRET falling back to hardcoded default (env secret missing or short).");
     $jwtSecret = 'bhakthanivas_secret_key_minimum_32_characters_long_secure_2026';
 }
 define('JWT_SECRET', $jwtSecret);
