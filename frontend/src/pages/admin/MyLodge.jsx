@@ -179,6 +179,20 @@ const MyLodge = () => {
                                 <span className="text-gray-500">Distance Type</span>
                                 <span className="font-medium capitalize">{lodge.distanceType}</span>
                             </div>
+                            {lodge.googleMapsLink && (
+                                <div className="flex justify-between border-t pt-2 mt-2">
+                                    <span className="text-gray-500 text-sm">Map Location</span>
+                                    <a
+                                        href={lodge.googleMapsLink}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-indigo-600 hover:text-indigo-700 text-xs font-medium flex items-center gap-1"
+                                    >
+                                        <Navigation size={12} />
+                                        View on Google Maps
+                                    </a>
+                                </div>
+                            )}
                         </div>
                     </div>
 

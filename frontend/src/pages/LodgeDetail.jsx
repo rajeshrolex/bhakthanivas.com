@@ -291,7 +291,7 @@ const LodgeDetail = () => {
     const maxGuestsForSelectedRoom = (selectedRoom?.maxOccupancy || 6) * rooms;
 
     const getGoogleMapsUrl = () => {
-        return `https://www.google.com/maps/search/?api=1&query=Sri+Raghavendra+Swamy+Mutt+Mantralayam`;
+        return lodge.googleMapsLink || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lodge.name + ' ' + lodge.address)}`;
     };
 
     return (
@@ -553,17 +553,32 @@ const LodgeDetail = () => {
                             <h2 className="text-xl font-bold text-gray-900 mb-4">
                                 Location
                             </h2>
-                            <div className="aspect-video bg-gray-100 rounded-xl mb-4 overflow-hidden">
-                                <iframe
-                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3838.8051981089815!2d77.37599!3d15.98683!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bb5e5d7a6e5e5e5%3A0x5e5e5e5e5e5e5e5e!2sSri%20Raghavendra%20Swamy%20Mutt!5e0!3m2!1sen!2sin!4v1234567890"
-                                    width="100%"
-                                    height="100%"
-                                    style={{ border: 0 }}
-                                    allowFullScreen=""
-                                    loading="lazy"
-                                    referrerPolicy="no-referrer-when-downgrade"
-                                    title="Lodge Location"
-                                />
+                            <div className="aspect-video bg-gray-100 rounded-xl mb-4 overflow-hidden relative">
+                                {lodge.googleMapsLink && lodge.googleMapsLink.includes('embed') ? (
+                                    <iframe
+                                        src={lodge.googleMapsLink}
+                                        width="100%"
+                                        height="100%"
+                                        style={{ border: 0 }}
+                                        allowFullScreen=""
+                                        loading="lazy"
+                                        referrerPolicy="no-referrer-when-downgrade"
+                                        title="Lodge Location"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-gray-50">
+                                        <MapPin size={48} className="text-primary-200 mb-3" />
+                                        <p className="text-sm text-gray-500 mb-4">{lodge.address}</p>
+                                        <a
+                                            href={getGoogleMapsUrl()}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="px-6 py-2 bg-white border border-primary-500 text-primary-600 rounded-lg text-sm font-semibold hover:bg-primary-50 transition-colors"
+                                        >
+                                            View on Google Maps
+                                        </a>
+                                    </div>
+                                )}
                             </div>
                             <p className="text-gray-600 mb-4">
                                 <MapPin size={16} className="inline mr-2 text-primary-500" />

@@ -31,6 +31,7 @@ function enrichLodge(array $lodge, Database $db): array
     $lodge['isBlocked']    = (bool)($lodge['is_blocked'] ?? false);
     $lodge['isFeatured']   = (bool)($lodge['featured']   ?? false);
     $lodge['featured']     = (bool)($lodge['featured']   ?? false); // Duplicated for frontend parity
+    $lodge['googleMapsLink'] = $lodge['google_maps_link'] ?? '';
 
     // Fetch blocked dates
     $dates = $db->fetchAll("SELECT date FROM blocked_dates WHERE lodge_id = ?", [$lodge['id']]);
@@ -162,10 +163,10 @@ if ($method === 'POST' && $id === null) {
 
     $db->query(
         "INSERT INTO lodges
-         (name, slug, tagline, images, distance, distance_type,
+         (name, slug, tagline, images, distance, distance_type, google_maps_link,
           price_starting, availability, featured, amenities, address, phone, whatsapp,
           description, is_blocked, terms)
-         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
         [
             $body['name'],
             $slug,
@@ -173,6 +174,7 @@ if ($method === 'POST' && $id === null) {
             json_encode($body['images']    ?? []),
             $body['distance']     ?? '',
             $body['distanceType'] ?? 'walkable',
+            $body['googleMapsLink'] ?? '',
             $body['priceStarting'],
             $body['availability'] ?? 'available',
             isset($body['featured']) && $body['featured'] ? 1 : 0,
@@ -243,6 +245,7 @@ if ($method === 'PUT' && $id !== null) {
             phone         = ?,
             whatsapp      = ?,
             description   = ?,
+            google_maps_link = ?,
             is_blocked    = ?,
             terms         = ?
          WHERE id = ?",
@@ -261,6 +264,7 @@ if ($method === 'PUT' && $id !== null) {
             $body['phone']        ?? $lodge['phone'],
             $body['whatsapp']     ?? $lodge['whatsapp'],
             $body['description']  ?? $lodge['description'],
+            $body['googleMapsLink'] ?? $lodge['google_maps_link'] ?? '',
             // isBlocked fallback
             isset($body['isBlocked']) ? ($body['isBlocked'] ? 1 : 0) : $lodge['is_blocked'],
             $body['terms']        ?? $lodge['terms'],
