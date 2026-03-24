@@ -38,22 +38,22 @@ export const getImageUrl = (path) => {
     // 4. Final safety pass for common malformations seen on live site
     // On production, internal paths like 'uploads/...' MUST go through 'php-backend/'
     if (!isLocalhost) {
-        // Fix: .com/uploads -> .com/php-backend/uploads
-        // Fix: /uploads -> /php-backend/uploads
+        // Fix: .com/uploads -> .com/api/uploads
+        // Fix: /uploads -> /api/uploads
         if (fullUrl.includes('/uploads/')) {
-            fullUrl = fullUrl.replace(/\/uploads\//g, '/php-backend/uploads/');
+            fullUrl = fullUrl.replace(/\/uploads\//g, '/api/uploads/');
         }
         // Handle cases where uploads/ is at the start of a relative-looking path
         else if (cleanPath.startsWith('uploads/')) {
-            fullUrl = `/php-backend/${cleanPath}`;
+            fullUrl = `/api/${cleanPath}`;
         }
     }
 
     fullUrl = fullUrl
-        .replace(/\.comuploads/g, '.com/php-backend/uploads')
+        .replace(/\.comuploads/g, '.com/api/uploads')
         .replace(/apiuploads/g, 'api/uploads')
-        .replace(/\/+uploads\//g, '/php-backend/uploads/') // Normalize and ensure backend prefix
-        .replace(/\/php-backend\/php-backend\//g, '/php-backend/'); // Prevent double prefix
+        .replace(/\/+uploads\//g, '/api/uploads/') // Normalize and ensure api prefix
+        .replace(/\/api\/api\//g, '/api/'); // Prevent double prefix
     
     // 5. Forceful check for protocol-relative issues if not on localhost
     if (fullUrl.startsWith('//') && !isLocalhost) {
