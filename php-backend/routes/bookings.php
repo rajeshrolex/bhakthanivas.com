@@ -51,6 +51,7 @@ function enrichBooking(array $b): array
     $b['customerEmail'] = $b['customer_email'] ?? '';
     $b['idType']        = $b['id_type']   ?? '';
     $b['idNumber']      = $b['id_number'] ?? '';
+    $b['rooms']         = (int)($b['rooms'] ?? 1);
     $b['createdAt']     = $b['created_at'];
 
     // Rebuild nested objects to mirror Node.js API shape
