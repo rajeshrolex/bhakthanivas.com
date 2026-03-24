@@ -50,8 +50,8 @@ if (strlen($jwtSecret) < 32) {
     $sources = ($jwtFromEnv ? 'E' : '_') . ($jwtFromSrv ? 'S' : '_') . ($jwtFromGet ? 'G' : '_');
     error_log("JWT_SECRET fallback (Source: $sources, Length: " . strlen($jwtSecret) . ")");
     
-    // THE HARDCODED FALLBACK
-    $jwtSecret = 'bhakthanivas_secret_key_minimum_32_characters_long_secure_2026';
+    // THE HARDCODED FALLBACK (matches the .env default for maximum stability)
+    $jwtSecret = 'mantralayam_jwt_secret_2026_secure_32char';
 }
 define('JWT_SECRET', $jwtSecret);
 
