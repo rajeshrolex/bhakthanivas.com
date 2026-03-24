@@ -35,6 +35,13 @@ export const getImageUrl = (path) => {
     // 3. Construct full URL with exactly one slash separator
     let fullUrl = root ? `${root}/${cleanPath}` : `/${cleanPath}`;
     
+    // PRODUCTION FIX: If we are on production (root is empty/relative) and 
+    // the path starts with 'uploads/', we need to prefix with 'php-backend/'
+    // because that's where the PHP files and their 'uploads' folder live.
+    if (!isLocalhost && !root && cleanPath.startsWith('uploads/')) {
+        fullUrl = `/php-backend/${cleanPath}`;
+    }
+    
     // 4. Final safety pass for common malformations seen on live site
     // Handles .comuploads, apiuploads, and missed slashes
     fullUrl = fullUrl
