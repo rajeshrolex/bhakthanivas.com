@@ -286,7 +286,7 @@ const Booking = () => {
                                                         }
                                                         setCheckInTime(`${String(newH).padStart(2, '0')}:${mins}`);
                                                     }}
-                                                    className="input-primary pl-12 appearance-none"
+                                                    className="input-primary pl-10 pr-8 appearance-none"
                                                 >
                                                     {[12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(h => (
                                                         <option key={h} value={h}>{h}</option>
@@ -304,7 +304,7 @@ const Booking = () => {
                                                     const hrs = t.split(':')[0];
                                                     setCheckInTime(`${hrs}:${e.target.value}`);
                                                 }}
-                                                className="input-primary appearance-none flex-1"
+                                                className="input-primary appearance-none px-4 pr-8 flex-1"
                                             >
                                                 {['00', '15', '30', '45'].map(m => (
                                                     <option key={m} value={m}>{m}</option>
@@ -329,7 +329,7 @@ const Booking = () => {
                                                     }
                                                     setCheckInTime(`${String(h).padStart(2, '0')}:${mins}`);
                                                 }}
-                                                className="input-primary appearance-none flex-1"
+                                                className="input-primary appearance-none px-4 pr-8 flex-1"
                                             >
                                                 <option value="AM">AM</option>
                                                 <option value="PM">PM</option>
