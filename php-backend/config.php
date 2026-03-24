@@ -18,29 +18,45 @@ require_once $autoload;
 // Load .env
 use Dotenv\Dotenv;
 
-$dotenv = Dotenv::createImmutable(__DIR__);
-$dotenv->load();
+try {
+    // Force absolute path for .env file
+    $dotenv = Dotenv::createImmutable(__DIR__);
+    $dotenv->load();
+} catch (\Exception $e) {
+    // Silently fail or log if needed, though most vars have fallbacks
+    error_log("Dotenv load failed: " . $e->getMessage());
+}
 
 // --- Database ---
-define('DB_HOST', $_ENV['DB_HOST'] ?? $_SERVER['DB_HOST'] ?? 'localhost');
-define('DB_PORT', $_ENV['DB_PORT'] ?? $_SERVER['DB_PORT'] ?? '3306');
-define('DB_NAME', $_ENV['DB_NAME'] ?? $_SERVER['DB_NAME'] ?? 'bhakthanivas');
-define('DB_USER', $_ENV['DB_USER'] ?? $_SERVER['DB_USER'] ?? 'root');
-define('DB_PASS', $_ENV['DB_PASS'] ?? $_SERVER['DB_PASS'] ?? '');
+define('DB_HOST', $_ENV['DB_HOST'] ?? $_SERVER['DB_HOST'] ?? getenv('DB_HOST') ?: 'localhost');
+define('DB_PORT', $_ENV['DB_PORT'] ?? $_SERVER['DB_PORT'] ?? getenv('DB_PORT') ?: '3306');
+define('DB_NAME', $_ENV['DB_NAME'] ?? $_SERVER['DB_NAME'] ?? getenv('DB_NAME') ?: 'bhakthanivas');
+define('DB_USER', $_ENV['DB_USER'] ?? $_SERVER['DB_USER'] ?? getenv('DB_USER') ?: 'root');
+define('DB_PASS', $_ENV['DB_PASS'] ?? $_SERVER['DB_PASS'] ?? getenv('DB_PASS') ?: '');
 
 // --- App ---
 $isLocal = in_array($_SERVER['REMOTE_ADDR'] ?? '', ['127.0.0.1', '::1']) || ($_SERVER['HTTP_HOST'] ?? '') === 'localhost';
-define('APP_ENV',  $_ENV['APP_ENV']  ?? $_SERVER['APP_ENV']  ?? ($isLocal ? 'development' : 'production'));
-define('BASE_URL', rtrim($_ENV['BASE_URL'] ?? $_SERVER['BASE_URL'] ?? 'http://localhost', '/'));
+define('APP_ENV',  $_ENV['APP_ENV']  ?? $_SERVER['APP_ENV']  ?? getenv('APP_ENV') ?: ($isLocal ? 'development' : 'production'));
+define('BASE_URL', rtrim($_ENV['BASE_URL'] ?? $_SERVER['BASE_URL'] ?? getenv('BASE_URL') ?: 'http://localhost', '/'));
 
-$jwtSecret = $_ENV['JWT_SECRET'] ?? $_SERVER['JWT_SECRET'] ?? '';
+// --- JWT ---
+$jwtFromEnv = $_ENV['JWT_SECRET']    ?? '';
+$jwtFromSrv = $_SERVER['JWT_SECRET'] ?? '';
+$jwtFromGet = getenv('JWT_SECRET')    ?: '';
+$jwtSecret  = $jwtFromEnv ?: $jwtFromSrv ?: $jwtFromGet ?: '';
+
 if (strlen($jwtSecret) < 32) {
-    // Log this for debugging (but don't expose in response)
-    error_log("JWT_SECRET falling back to hardcoded default (env secret missing or short).");
+    // Log the source of failure for debugging
+    $sources = ($jwtFromEnv ? 'E' : '_') . ($jwtFromSrv ? 'S' : '_') . ($jwtFromGet ? 'G' : '_');
+    error_log("JWT_SECRET fallback (Source: $sources, Length: " . strlen($jwtSecret) . ")");
+    
+    // THE HARDCODED FALLBACK
     $jwtSecret = 'bhakthanivas_secret_key_minimum_32_characters_long_secure_2026';
 }
 define('JWT_SECRET', $jwtSecret);
-define('JWT_EXPIRY', (int)($_ENV['JWT_EXPIRY'] ?? $_SERVER['JWT_EXPIRY'] ?? 86400));
+
+$jwtExpiry = $_ENV['JWT_EXPIRY'] ?? $_SERVER['JWT_EXPIRY'] ?? getenv('JWT_EXPIRY') ?? 86400;
+define('JWT_EXPIRY', (int)$jwtExpiry);
 
 // --- Razorpay ---
 define('RAZORPAY_KEY_ID',     $_ENV['RAZORPAY_KEY_ID']     ?? $_SERVER['RAZORPAY_KEY_ID']     ?? '');

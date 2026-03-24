@@ -91,14 +91,17 @@ try {
             require_once __DIR__ . '/routes/upload.php';
             break;
 
-        case '':
         case 'health':
-            // Health check endpoint
+            // Health check endpoint with masked secret status
+            $secretPreview = (strlen(JWT_SECRET) > 8) ? substr(JWT_SECRET, 0, 4) . '...' . substr(JWT_SECRET, -4) : 'TOO_SHORT';
+            $isFallback = (JWT_SECRET === 'bhakthanivas_secret_key_minimum_32_characters_long_secure_2026');
+            
             jsonResponse([
                 'success' => true,
                 'service' => 'BhaktaNivas PHP API',
-                'version' => '2.0.0',
                 'status'  => 'running',
+                'secret_status' => $isFallback ? 'FALLBACK' : 'REAL_SECRET',
+                'secret_preview' => $secretPreview,
                 'time'    => date('c'),
             ]);
             break;
