@@ -45,6 +45,7 @@ if ($method === 'POST' && $action === 'migrate') {
                 images        LONGTEXT,
                 distance      VARCHAR(100) DEFAULT '',
                 distance_type ENUM('walkable','auto') DEFAULT 'walkable',
+                google_maps_link TEXT,
                 rating        DECIMAL(3,1) UNSIGNED DEFAULT 0.0,
                 review_count  INT UNSIGNED DEFAULT 0,
                 price_starting DECIMAL(10,2) UNSIGNED NOT NULL DEFAULT 0,
@@ -207,7 +208,8 @@ if ($method === 'POST' && $action === 'migrate') {
         "ALTER TABLE lodges MODIFY COLUMN images LONGTEXT",
         "ALTER TABLE lodges MODIFY COLUMN amenities LONGTEXT",
         "ALTER TABLE rooms MODIFY COLUMN amenities LONGTEXT",
-        "ALTER TABLE temples MODIFY COLUMN images LONGTEXT"
+        "ALTER TABLE temples MODIFY COLUMN images LONGTEXT",
+        "ALTER TABLE lodges ADD COLUMN IF NOT EXISTS google_maps_link TEXT AFTER distance_type"
     ];
 
     foreach ($alterations as $sql) {
