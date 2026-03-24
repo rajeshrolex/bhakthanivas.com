@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { dashboardAPI } from '../../services/api';
-import { Building2, Users, IndianRupee, CalendarCheck, User, Loader2 } from 'lucide-react';
+import { Building2, Users, IndianRupee, CalendarCheck, User, Loader2, Database as DbIcon, RefreshCw } from 'lucide-react';
+import { systemAPI, dashboardAPI } from '../../services/api';
 import { format } from 'date-fns';
 
 const Dashboard = () => {
     const { user } = useAuth();
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [migrating, setMigrating] = useState(false);
+    const [message, setMessage] = useState(null);
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -25,6 +27,25 @@ const Dashboard = () => {
         };
         fetchStats();
     }, [user]);
+    
+    const handleMigrate = async () => {
+        if (!window.confirm('This will update the database schema. Are you sure?')) return;
+        try {
+            setMigrating(true);
+            setMessage({ type: 'info', text: 'Running migration...' });
+            const res = await systemAPI.migrate();
+            if (res.success) {
+                setMessage({ type: 'success', text: 'Database migrated successfully!' });
+            } else {
+                setMessage({ type: 'error', text: res.message || 'Migration failed' });
+            }
+        } catch (error) {
+            setMessage({ type: 'error', text: error.message || 'Error running migration' });
+        } finally {
+            setMigrating(false);
+            setTimeout(() => setMessage(null), 5000);
+        }
+    };
 
     const StatCard = ({ title, value, icon: Icon, color }) => (
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
@@ -150,6 +171,35 @@ const Dashboard = () => {
                     </div>
                 </div>
             </div>
+
+            {user?.role === 'super_admin' && (
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
+                    <div>
+                        <h3 className="font-bold text-gray-900">System Maintenance</h3>
+                        <p className="text-sm text-gray-500">Run database migrations to ensure your schema is up to date.</p>
+                    </div>
+                    <div className="flex flex-col items-end gap-2">
+                        <button
+                            onClick={handleMigrate}
+                            disabled={migrating}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all ${
+                                migrating ? 'bg-indigo-100 text-indigo-400' : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                            }`}
+                        >
+                            {migrating ? <RefreshCw size={18} className="animate-spin" /> : <DbIcon size={18} />}
+                            {migrating ? 'Migrating...' : 'Run Migration'}
+                        </button>
+                        {message && (
+                            <span className={`text-xs font-medium ${
+                                message.type === 'success' ? 'text-green-600' : 
+                                message.type === 'error' ? 'text-red-600' : 'text-blue-600'
+                            }`}>
+                                {message.text}
+                            </span>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
