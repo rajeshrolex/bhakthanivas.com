@@ -43,7 +43,8 @@ function requireAuth(): array
     } catch (ExpiredException $e) {
         jsonError('Token has expired. Please log in again.', 401);
     } catch (SignatureInvalidException $e) {
-        jsonError('Invalid token signature.', 401);
+        $secretType = (JWT_SECRET === 'bhakthanivas_secret_key_minimum_32_characters_long_secure_2026') ? '(F)' : '(S)';
+        jsonError("Invalid token signature $secretType.", 401);
     } catch (\Exception $e) {
         jsonError('Invalid or malformed token: ' . $e->getMessage(), 401);
     }
