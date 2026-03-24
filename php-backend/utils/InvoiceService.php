@@ -40,6 +40,7 @@ class InvoiceService
         $checkInTime   = htmlspecialchars($d['checkInTime']   ?? '12:00 PM');
         $checkOutTime  = htmlspecialchars($d['checkOutTime']  ?? '11:00 AM');
         $guests        = (int)($d['guests']       ?? 1);
+        $rooms         = (int)($d['rooms']        ?? 1);
         $amount        = number_format((float)($d['amount']       ?? 0), 2);
         $amountPaid    = number_format((float)($d['amountPaid']   ?? 0), 2);
         $balanceAmount = number_format((float)($d['balanceAmount'] ?? 0), 2);
@@ -83,6 +84,8 @@ class InvoiceService
   <tr><td>Mobile No</td><td>{$phone}</td></tr>
   <tr><td>Lodge Name</td><td>{$lodgeName}</td></tr>
   <tr><td>Room Type</td><td>{$roomType} ({$roomName})</td></tr>
+  <tr><td>No. of Rooms</td><td>{$rooms}</td></tr>
+
   <tr><td>Check-in</td><td>{$checkIn}</td></tr>
   <tr><td>Check-out</td><td>{$checkOut}</td></tr>
   <tr><td>Check-in Time</td><td>{$checkInTime}</td></tr>
