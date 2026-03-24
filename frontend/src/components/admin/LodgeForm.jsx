@@ -440,18 +440,6 @@ const LodgeForm = ({ lodge, onSave, onClose, isSubmitting }) => {
                                                     )}
                                                 </div>
                                             </div>
-
-                                            {/* OR URL Input */}
-                                            <div>
-                                                <label className="block text-xs text-gray-500 mb-1">Or paste image URL</label>
-                                                <input
-                                                    type="url"
-                                                    value={img}
-                                                    onChange={(e) => handleImageChange(index, e.target.value)}
-                                                    placeholder="https://example.com/image.jpg"
-                                                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
-                                                />
-                                            </div>
                                         </div>
 
                                         {/* Remove Button */}
