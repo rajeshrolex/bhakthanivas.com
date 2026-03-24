@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { lodgeAPI } from '../../services/api';
-import { MapPin, Star, Edit, Trash2, Plus, Loader2, ShieldAlert, ShieldCheck } from 'lucide-react';
+import { lodgeAPI, systemAPI } from '../../services/api';
+import { MapPin, Star, Edit, Trash2, Plus, Loader2, ShieldAlert, ShieldCheck, Database as DbIcon, RefreshCw } from 'lucide-react';
 import LodgeForm from '../../components/admin/LodgeForm';
 
 const ManageLodges = () => {
@@ -11,6 +11,8 @@ const ManageLodges = () => {
     const [editingLodge, setEditingLodge] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [updatingBlockId, setUpdatingBlockId] = useState(null);
+    const [migrating, setMigrating] = useState(false);
+    const [migrationMessage, setMigrationMessage] = useState(null);
 
     useEffect(() => {
         fetchLodges();
@@ -61,6 +63,28 @@ const ManageLodges = () => {
     const handleAddNew = () => {
         setEditingLodge(null);
         setShowForm(true);
+    };
+
+    const handleMigrate = async () => {
+        if (!window.confirm('This will update the database schema to fix the "Column not found" error. Proceed?')) return;
+        try {
+            setMigrating(true);
+            setMigrationMessage({ type: 'info', text: 'Migrating...' });
+            const res = await systemAPI.migrate();
+            if (res.success) {
+                setMigrationMessage({ type: 'success', text: 'Fixed!' });
+                alert('Database updated successfully! You can now save lodges.');
+            } else {
+                setMigrationMessage({ type: 'error', text: 'Failed' });
+                alert('Migration failed: ' + res.message);
+            }
+        } catch (error) {
+            setMigrationMessage({ type: 'error', text: 'Error' });
+            alert('Error: ' + error.message);
+        } finally {
+            setMigrating(false);
+            setTimeout(() => setMigrationMessage(null), 5000);
+        }
     };
 
     const handleEdit = (lodge) => {
@@ -117,13 +141,26 @@ const ManageLodges = () => {
                     <h2 className="text-2xl font-bold text-gray-900">Manage Lodges</h2>
                     <p className="text-gray-500">View and manage all partner lodges.</p>
                 </div>
-                <button
-                    onClick={handleAddNew}
-                    className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
-                >
-                    <Plus size={18} />
-                    Add New Lodge
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={handleMigrate}
+                        disabled={migrating}
+                        title="Fix Database Schema"
+                        className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            migrating ? 'bg-gray-100 text-gray-400' : 'bg-amber-50 text-amber-600 hover:bg-amber-100 border border-amber-200'
+                        }`}
+                    >
+                        {migrating ? <RefreshCw size={16} className="animate-spin" /> : <DbIcon size={16} />}
+                        {migrating ? 'Fixing...' : 'Fix Database'}
+                    </button>
+                    <button
+                        onClick={handleAddNew}
+                        className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
+                    >
+                        <Plus size={18} />
+                        Add New Lodge
+                    </button>
+                </div>
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
