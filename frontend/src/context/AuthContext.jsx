@@ -82,17 +82,17 @@ export const AuthProvider = ({ children }) => {
     };
 
     // Build Authorization + Content-Type headers for authenticated API calls
-    const getAuthHeaders = () => {
+    const getAuthHeaders = useCallback(() => {
         const headers = { 'Content-Type': 'application/json' };
         if (token) headers['Authorization'] = `Bearer ${token}`;
         return headers;
-    };
+    }, [token]);
 
     // Returns true if the current user is a super_admin
-    const isSuperAdmin = () => user?.role === 'super_admin';
+    const isSuperAdmin = useCallback(() => user?.role === 'super_admin', [user]);
 
     // Returns true if the current user has any admin role
-    const isAdmin = () => user?.role === 'admin' || user?.role === 'super_admin';
+    const isAdmin = useCallback(() => user?.role === 'admin' || user?.role === 'super_admin', [user]);
 
     return (
         <AuthContext.Provider

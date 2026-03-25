@@ -81,7 +81,7 @@ const PriceCalendar = () => {
                     setSelectedLodge(filtered[0] || null);
                 } else {
                     setLodges(data);
-                    setSelectedLodge(data[0]);
+                    setSelectedLodge(prev => prev || data[0]);
                 }
             }
         });
