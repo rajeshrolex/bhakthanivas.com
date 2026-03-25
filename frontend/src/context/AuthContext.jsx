@@ -2,7 +2,7 @@
 // BUG FIX: import statement was placed AFTER the createContext call,
 // which is technically invalid and can cause linting/transpile errors.
 // All imports must be at the top of the file.
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import { API_BASE_URL } from '../services/api';
 
 const AuthContext = createContext(null);
