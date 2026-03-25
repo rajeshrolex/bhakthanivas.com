@@ -295,7 +295,7 @@ const PriceCalendar = () => {
                         className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm bg-white shadow-sm"
                         value={selectedLodge?._id || ''}
                         onChange={e => {
-                            const lodge = lodges.find(l => l._id === e.target.value);
+                            const lodge = lodges.find(l => String(l._id) === e.target.value);
                             setSelectedLodge(lodge || null);
                         }}
                     >
