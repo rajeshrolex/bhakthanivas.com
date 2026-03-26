@@ -52,7 +52,7 @@ export const useRazorpay = () => {
 
             // Razorpay options
             const options = {
-                key: RAZORPAY_KEY,
+                key: orderResponse.keyId || RAZORPAY_KEY,
                 amount: orderResponse.amount,
                 currency: orderResponse.currency,
                 name: 'Bhakta Nivas',
@@ -100,6 +100,10 @@ export const useRazorpay = () => {
                     }
                 }
             };
+
+            if (!options.key) {
+                throw new Error('Razorpay Key ID is missing. Please check configuration.');
+            }
 
             // Open Razorpay checkout
             const razorpay = new window.Razorpay(options);
