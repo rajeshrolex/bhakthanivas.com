@@ -94,7 +94,6 @@ try {
         case 'health':
             // Health check endpoint with masked secret status
             $secretPreview = (strlen(JWT_SECRET) > 8) ? substr(JWT_SECRET, 0, 4) . '...' . substr(JWT_SECRET, -4) : 'TOO_SHORT';
-            $rzpPreview = (strlen(RAZORPAY_KEY_ID) > 8) ? substr(RAZORPAY_KEY_ID, 0, 8) . '...' : 'MISSING';
             $isFallback = (JWT_SECRET === 'bhakthanivas_secret_key_minimum_32_characters_long_secure_2026');
             
             jsonResponse([
@@ -103,7 +102,6 @@ try {
                 'status'  => 'running',
                 'secret_status' => $isFallback ? 'FALLBACK' : 'REAL_SECRET',
                 'secret_preview' => $secretPreview,
-                'rzp_key_preview' => $rzpPreview,
                 'time'    => date('c'),
             ]);
             break;
