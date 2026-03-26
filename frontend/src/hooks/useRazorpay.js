@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { paymentAPI } from '../services/api';
 
-const RAZORPAY_KEY = import.meta.env.VITE_RAZORPAY_KEY || 'rzp_test_SDLqt0o7HljyuM';
+const RAZORPAY_KEY = import.meta.env.VITE_RAZORPAY_KEY;
+if (!RAZORPAY_KEY) {
+    console.error('RAZORPAY_KEY is not defined in environment variables');
+}
 
 export const useRazorpay = () => {
     const [loading, setLoading] = useState(false);
