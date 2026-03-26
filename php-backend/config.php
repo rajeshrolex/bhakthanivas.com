@@ -59,8 +59,8 @@ $jwtExpiry = $_ENV['JWT_EXPIRY'] ?? $_SERVER['JWT_EXPIRY'] ?? getenv('JWT_EXPIRY
 define('JWT_EXPIRY', (int)$jwtExpiry);
 
 // --- Razorpay ---
-define('RAZORPAY_KEY_ID',     $_ENV['RAZORPAY_KEY_ID']     ?? $_SERVER['RAZORPAY_KEY_ID']     ?? '');
-define('RAZORPAY_KEY_SECRET', $_ENV['RAZORPAY_KEY_SECRET'] ?? $_SERVER['RAZORPAY_KEY_SECRET'] ?? '');
+define('RAZORPAY_KEY_ID',     $_ENV['RAZORPAY_KEY_ID']     ?? $_SERVER['RAZORPAY_KEY_ID']     ?? 'rzp_live_SVlDia4f6BeZBq');
+define('RAZORPAY_KEY_SECRET', $_ENV['RAZORPAY_KEY_SECRET'] ?? $_SERVER['RAZORPAY_KEY_SECRET'] ?? 'UiEhFo1Dl01M6x159NrEwVaN');
 
 // --- SMTP ---
 define('SMTP_HOST',     $_ENV['SMTP_HOST']     ?? $_SERVER['SMTP_HOST']     ?? 'smtp.hostinger.com');

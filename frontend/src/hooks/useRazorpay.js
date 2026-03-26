@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { paymentAPI } from '../services/api';
 
-const RAZORPAY_KEY = import.meta.env.VITE_RAZORPAY_KEY;
+const RAZORPAY_KEY = import.meta.env.VITE_RAZORPAY_KEY || 'rzp_live_SVlDia4f6BeZBq';
 if (!RAZORPAY_KEY) {
     console.error('RAZORPAY_KEY is not defined in environment variables');
 }
