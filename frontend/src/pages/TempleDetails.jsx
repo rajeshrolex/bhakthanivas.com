@@ -20,6 +20,12 @@ const TempleDetails = () => {
     const [activeImage, setActiveImage] = useState({});
 
     useEffect(() => {
+        document.title = "Sri Raghavendra Swamy Mutt Details – Timings, Darshan & Info | Bhakta Nivas";
+        const metaDesc = document.querySelector('meta[name="description"]');
+        if (metaDesc) {
+            metaDesc.setAttribute("content", "Find complete details about Sri Raghavendra Swamy Mutt, Mantralayam. Darshan timings, special seva information, and local transport guide for pilgrims.");
+        }
+
         const fetchTemples = async () => {
             try {
                 const data = await templeAPI.getAll();

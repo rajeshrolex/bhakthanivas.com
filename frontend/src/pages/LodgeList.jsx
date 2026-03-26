@@ -51,6 +51,12 @@ const LodgeList = () => {
 
     // Sync URL parameters with booking context
     useEffect(() => {
+        document.title = "Lodges in Mantralayam – Private Rooms Near Sri Raghavendra Swamy Mutt | Bhakta Nivas";
+        const metaDesc = document.querySelector('meta[name="description"]');
+        if (metaDesc) {
+            metaDesc.setAttribute("content", "Browse and book the best private lodges in Mantralayam. Clean, verified rooms within walking distance of Sri Raghavendra Swamy Mutt. Affordable prices and instant confirmation.");
+        }
+
         const roomsParam = searchParams.get('rooms');
         const guestsParam = searchParams.get('guests');
         if (roomsParam) {

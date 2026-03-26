@@ -55,6 +55,18 @@ const LodgeDetail = () => {
                 const data = await lodgeAPI.getBySlug(slug, checkIn, checkOut);
                 setLodge(data);
                 selectLodge(data);
+
+                // SEO: Update Title & Meta
+                if (data) {
+                    const title = `${data.name} – Book Rooms Near Mantralayam Temple | Bhakta Nivas`;
+                    document.title = title;
+                    
+                    const metaDesc = document.querySelector('meta[name="description"]');
+                    if (metaDesc) {
+                        const desc = `Book ${data.name} in Mantralayam. Verified private lodge at walking distance from Sri Raghavendra Swamy Mutt. Comfortable stay for devotees.`;
+                        metaDesc.setAttribute("content", desc);
+                    }
+                }
             } catch (error) {
                 console.error('Error fetching lodge:', error);
             } finally {
@@ -64,6 +76,26 @@ const LodgeDetail = () => {
         fetchLodge();
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [slug]);
+
+    // Structured Data (JSON-LD)
+    const structuredData = lodge ? {
+        "@context": "https://schema.org",
+        "@type": "LodgingBusiness",
+        "name": lodge.name,
+        "description": lodge.description || `Verified private lodge in Mantralayam near Sri Raghavendra Swamy Mutt.`,
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Mantralayam",
+            "addressRegion": "Andhra Pradesh",
+            "addressCountry": "IN"
+        },
+        "telephone": lodge.phone || "9603527758",
+        "starRating": {
+            "@type": "Rating",
+            "ratingValue": lodge.rating || "4.5"
+        },
+        "priceRange": "₹1000-₹3000"
+    } : null;
 
     // Check availability for selected date range
     const checkAvailability = async () => {
@@ -296,6 +328,12 @@ const LodgeDetail = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
+            {/* Structured Data Script */}
+            {structuredData && (
+                <script type="application/ld+json">
+                    {JSON.stringify(structuredData)}
+                </script>
+            )}
             {/* Top Bar - Mobile */}
             <div className="md:hidden bg-white sticky top-16 z-40 border-b border-gray-100">
                 <div className="flex items-center justify-between px-4 py-3">

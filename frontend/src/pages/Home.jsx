@@ -50,22 +50,42 @@ const Home = () => {
 
     // Auto-scroll images every 4 seconds
     useEffect(() => {
+        document.title = "Bhakta Nivas – Private Lodge Booking Near Sri Raghavendra Swamy Mutt, Mantralayam";
+        // Update meta description
+        const metaDesc = document.querySelector('meta[name="description"]');
+        if (metaDesc) {
+            metaDesc.setAttribute("content", "Book verified private lodges near Sri Raghavendra Swamy Mutt, Mantralayam. Clean rooms, instant booking, and walkable distance for devotees.");
+        }
+
         const interval = setInterval(() => {
             setCurrentSlide((prev) => (prev + 1) % heroImages.length);
         }, 4000);
         return () => clearInterval(interval);
     }, []);
 
+    // Structured Data (JSON-LD)
+    const structuredData = {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Bhakta Nivas",
+        "url": "https://bhakthanivas.com/",
+        "description": "Premium private lodge booking platform in Mantralayam"
+    };
 
     return (
         <div className="min-h-screen bg-gray-50 overflow-x-hidden">
+            {/* Structured Data Script */}
+            <script type="application/ld+json">
+                {JSON.stringify(structuredData)}
+            </script>
+
             {/* Hero Section with Image Slider */}
             <section className="relative min-h-[600px] lg:h-[620px] overflow-hidden">
                 {/* Background Image */}
                 <div className="absolute inset-0">
                     <img
                         src={heroImages[currentSlide]}
-                        alt="Mantralayam Temple"
+                        alt={`Sri Raghavendra Swamy Mutt View - ${currentSlide + 1}`}
                         className="w-full h-full object-cover"
                     />
                 </div>
