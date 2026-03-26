@@ -217,6 +217,7 @@ const BookingConfirmation = () => {
                         className="text-gray-600"
                     >
                         Your booking has been successfully confirmed
+
                     </motion.p>
                 </motion.div>
 
@@ -289,6 +290,7 @@ const BookingConfirmation = () => {
                                     <p className="font-medium text-gray-900">
                                         {displayCheckOutDate}
                                     </p>
+
 
                                     {displayCheckOutTime && (
                                         <p className="text-xs text-primary-600 flex items-center gap-1">

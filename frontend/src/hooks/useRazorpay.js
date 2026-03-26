@@ -93,6 +93,24 @@ export const useRazorpay = () => {
                 theme: {
                     color: '#f97316' // Orange primary color
                 },
+                config: {
+                    display: {
+                        blocks: {
+                            uti: { // UPI/QR block
+                                name: 'Pay via UPI/QR',
+                                instruments: [
+                                    {
+                                        method: 'upi'
+                                    }
+                                ]
+                            }
+                        },
+                        sequence: ['block.uti', 'card', 'netbanking', 'wallet'],
+                        preferences: {
+                            show_default_blocks: true
+                        }
+                    }
+                },
                 modal: {
                     ondismiss: function () {
                         setLoading(false);

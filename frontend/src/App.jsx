@@ -2,7 +2,7 @@ import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Navbar from './components/common/Navbar'
 import Footer from './components/common/Footer'
-import WhatsAppButton from './components/common/WhatsAppButton'
+
 import ScrollToTop from './components/common/ScrollToTop'
 import Home from './pages/Home'
 import LodgeList from './pages/LodgeList'
@@ -29,12 +29,12 @@ function App() {
       {/* Conditionally render Navbar/Footer based on path could be better, but for now we keep them for public pages */}
       <Routes>
         {/* Public Routes */}
-        <Route path="/" element={<><Navbar /><main className="flex-1"><Home /></main><Footer /><WhatsAppButton /></>} />
-        <Route path="/lodges" element={<><Navbar /><main className="flex-1"><LodgeList /></main><Footer /><WhatsAppButton /></>} />
-        <Route path="/lodge/:slug" element={<><Navbar /><main className="flex-1"><LodgeDetail /></main><Footer /><WhatsAppButton /></>} />
-        <Route path="/booking" element={<><Navbar /><main className="flex-1"><Booking /></main><Footer /><WhatsAppButton /></>} />
-        <Route path="/booking/confirmation/:bookingId?" element={<><Navbar /><main className="flex-1"><BookingConfirmation /></main><Footer /><WhatsAppButton /></>} />
-        <Route path="/temple-details" element={<><Navbar /><main className="flex-1"><TempleDetails /></main><Footer /><WhatsAppButton /></>} />
+        <Route path="/" element={<><Navbar /><main className="flex-1"><Home /></main><Footer /></>} />
+        <Route path="/lodges" element={<><Navbar /><main className="flex-1"><LodgeList /></main><Footer /></>} />
+        <Route path="/lodge/:slug" element={<><Navbar /><main className="flex-1"><LodgeDetail /></main><Footer /></>} />
+        <Route path="/booking" element={<><Navbar /><main className="flex-1"><Booking /></main><Footer /></>} />
+        <Route path="/booking/confirmation/:bookingId?" element={<><Navbar /><main className="flex-1"><BookingConfirmation /></main><Footer /></>} />
+        <Route path="/temple-details" element={<><Navbar /><main className="flex-1"><TempleDetails /></main><Footer /></>} />
 
         {/* Admin Routes */}
         <Route path="/admin/login" element={<Login />} />
