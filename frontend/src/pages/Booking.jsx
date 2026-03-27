@@ -11,7 +11,8 @@ import {
     ChevronLeft,
     Check,
     Shield,
-    Clock
+    Clock,
+    ChevronDown
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useBooking } from '../context/BookingContext';
@@ -260,12 +261,15 @@ const Booking = () => {
 
                                     {/* Check-in Time */}
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
                                             Check-in Time
                                         </label>
                                         <div className="flex items-center gap-2">
-                                            <div className="relative flex-1">
-                                                <Clock size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                            {/* Hour */}
+                                            <div className="relative flex-1 group">
+                                                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none group-focus-within:text-primary-500 transition-colors">
+                                                    <Clock size={16} />
+                                                </div>
                                                 <select
                                                     value={(() => {
                                                         const t = bookingData.checkInTime || '12:00';
@@ -286,58 +290,76 @@ const Booking = () => {
                                                         }
                                                         setCheckInTime(`${String(newH).padStart(2, '0')}:${mins}`);
                                                     }}
-                                                    className="input-primary pl-10 pr-8 appearance-none"
+                                                    className="w-full bg-white border-2 border-gray-200 rounded-xl px-9 py-3 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none appearance-none transition-all cursor-pointer"
                                                 >
                                                     {[12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(h => (
                                                         <option key={h} value={h}>{h}</option>
                                                     ))}
                                                 </select>
+                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                                                    <ChevronDown size={14} />
+                                                </div>
                                             </div>
-                                            <span className="text-gray-500 font-bold">:</span>
-                                            <select
-                                                value={(() => {
-                                                    const t = bookingData.checkInTime || '12:00';
-                                                    return t.split(':')[1];
-                                                })()}
-                                                onChange={(e) => {
-                                                    const t = bookingData.checkInTime || '12:00';
-                                                    const hrs = t.split(':')[0];
-                                                    setCheckInTime(`${hrs}:${e.target.value}`);
-                                                }}
-                                                className="input-primary appearance-none px-4 pr-8 flex-1"
-                                            >
-                                                {['00', '15', '30', '45'].map(m => (
-                                                    <option key={m} value={m}>{m}</option>
-                                                ))}
-                                            </select>
-                                            <select
-                                                value={(() => {
-                                                    const t = bookingData.checkInTime || '12:00';
-                                                    const h = parseInt(t.split(':')[0], 10);
-                                                    return h >= 12 ? 'PM' : 'AM';
-                                                })()}
-                                                onChange={(e) => {
-                                                    const t = bookingData.checkInTime || '12:00';
-                                                    const [hStr, mins] = t.split(':');
-                                                    let h = parseInt(hStr, 10);
-                                                    const wasPM = h >= 12;
-                                                    const nowPM = e.target.value === 'PM';
-                                                    if (wasPM && !nowPM) {
-                                                        h = h === 12 ? 0 : h - 12;
-                                                    } else if (!wasPM && nowPM) {
-                                                        h = h === 0 ? 12 : h + 12;
-                                                    }
-                                                    setCheckInTime(`${String(h).padStart(2, '0')}:${mins}`);
-                                                }}
-                                                className="input-primary appearance-none px-4 pr-8 flex-1"
-                                            >
-                                                <option value="AM">AM</option>
-                                                <option value="PM">PM</option>
-                                            </select>
+
+                                            <span className="text-gray-400 font-bold">:</span>
+
+                                            {/* Minutes */}
+                                            <div className="relative flex-1">
+                                                <select
+                                                    value={(() => {
+                                                        const t = bookingData.checkInTime || '12:00';
+                                                        return t.split(':')[1];
+                                                    })()}
+                                                    onChange={(e) => {
+                                                        const t = bookingData.checkInTime || '12:00';
+                                                        const hrs = t.split(':')[0];
+                                                        setCheckInTime(`${hrs}:${e.target.value}`);
+                                                    }}
+                                                    className="w-full bg-white border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none appearance-none transition-all cursor-pointer"
+                                                >
+                                                    {['00'].map(m => (
+                                                        <option key={m} value={m}>{m}</option>
+                                                    ))}
+                                                </select>
+                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                                                    <ChevronDown size={14} />
+                                                </div>
+                                            </div>
+
+                                            {/* period */}
+                                            <div className="relative flex-1">
+                                                <select
+                                                    value={(() => {
+                                                        const t = bookingData.checkInTime || '12:00';
+                                                        const h = parseInt(t.split(':')[0], 10);
+                                                        return h >= 12 ? 'PM' : 'AM';
+                                                    })()}
+                                                    onChange={(e) => {
+                                                        const t = bookingData.checkInTime || '12:00';
+                                                        const [hStr, mins] = t.split(':');
+                                                        let h = parseInt(hStr, 10);
+                                                        const wasPM = h >= 12;
+                                                        const nowPM = e.target.value === 'PM';
+                                                        if (wasPM && !nowPM) {
+                                                            h = h === 12 ? 0 : h - 12;
+                                                        } else if (!wasPM && nowPM) {
+                                                            h = h === 0 ? 12 : h + 12;
+                                                        }
+                                                        setCheckInTime(`${String(h).padStart(2, '0')}:${mins}`);
+                                                    }}
+                                                    className="w-full bg-white border-2 border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none appearance-none transition-all cursor-pointer"
+                                                >
+                                                    <option value="AM">AM</option>
+                                                    <option value="PM">PM</option>
+                                                </select>
+                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                                                    <ChevronDown size={14} />
+                                                </div>
+                                            </div>
                                         </div>
                                         {bookingData.checkInTime && checkIn && (
-                                            <p className="text-xs text-primary-600 mt-1 flex items-center gap-1">
-                                                <Clock size={12} />
+                                            <p className="text-[11px] text-primary-600 mt-2 flex items-center gap-1 font-medium bg-primary-50 w-fit px-2 py-0.5 rounded-full">
+                                                <Clock size={10} />
                                                 Checkout: {formatTo12Hour(calculateCheckOutTime(checkIn, bookingData.checkInTime, checkOut).checkOutTime)} ({totalNights * 24 - 1} hrs stay)
                                             </p>
                                         )}
