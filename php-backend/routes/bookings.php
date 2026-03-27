@@ -105,8 +105,19 @@ function generateBookingId(): string
 function formatDate(string $date): string
 {
     if (!$date) return 'N/A';
-    $d = \DateTime::createFromFormat('Y-m-d', $date) ?: \DateTime::createFromFormat('Y-m-d H:i:s', $date);
-    return $d ? $d->format('d-m-Y') : $date;
+    try {
+        // Native DateTime handles ISO strings "YYYY-MM-DDTHH:mm:ss.sssZ"
+        $d = new \DateTime($date);
+        
+        // Convert to IST to ensure the date matches the local check-in time 
+        // (Avoids UTC off-by-one-day issues like 22:30 UTC being 04:00 IST the next day)
+        $d->setTimezone(new \DateTimeZone('Asia/Kolkata'));
+        
+        return $d->format('d M Y'); // e.g. "28 Mar 2026"
+    } catch (\Throwable $e) {
+        error_log("formatDate error for '$date': " . $e->getMessage());
+        return $date;
+    }
 }
 
 // ============================================================ GET /bookings
@@ -449,6 +460,7 @@ if ($method === 'POST' && $rawId === null) {
             'checkOutTime'    => $checkoutResult['checkOutTime12'],
             'guests'          => $body['guests'],
             'rooms'           => $numRooms,
+            'nights'          => $checkoutResult['nights'] ?? 1,
             'amount'          => $totalAmount,
             'amountPaid'      => $amountPaid,
             'balanceAmount'   => $balanceAmount,

@@ -80,6 +80,7 @@ class TimeUtils
                 'checkOutTime'   => $outTime24,
                 'checkOutTime12' => self::formatTo12Hour($outTime24),
                 'checkOutDate'   => $checkOut->format('Y-m-d'),
+                'nights'         => $nights,
             ];
 
         } catch (\Throwable $e) {
@@ -88,6 +89,7 @@ class TimeUtils
                 'checkOutTime'   => '11:00',
                 'checkOutTime12' => '11:00 AM',
                 'checkOutDate'   => $checkOutDate ?? date('Y-m-d', strtotime('+1 day', strtotime($checkInDate))),
+                'nights'         => 1,
             ];
         }
     }

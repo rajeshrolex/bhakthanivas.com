@@ -129,7 +129,8 @@ class EmailService
             <h3 style=\"margin:0 0 15px 0;color:#1f2937\">Booking Details</h3>
             <table style=\"width:100%;border-collapse:collapse\">
                 <tr><td style=\"padding:8px 0;color:#6b7280\">Booking ID:</td><td style=\"padding:8px 0;font-weight:bold;color:#1f2937\">{$bookingId}</td></tr>
-                <tr><td style=\"padding:8px 0;color:#6b7280\">Room:</td><td style=\"padding:8px 0;font-weight:bold;color:#1f2937\">{$roomName} " . (($d['rooms'] ?? 1) > 1 ? "({$d['rooms']} Rooms)" : "") . "</td></tr>
+                <tr><td style=\"padding:8px 0;color:#6b7280\">Stay:</td><td style=\"padding:8px 0;font-weight:bold;color:#1f2937\">" . ($d['rooms'] ?? 1) . " " . (($d['rooms'] ?? 1) == 1 ? 'Room' : 'Rooms') . " | " . ($d['nights'] ?? 1) . " " . (($d['nights'] ?? 1) == 1 ? 'Night' : 'Nights') . "</td></tr>
+                <tr><td style=\"padding:8px 0;color:#6b7280\">Room Type:</td><td style=\"padding:8px 0;font-weight:bold;color:#1f2937\">{$roomName}</td></tr>
                 <tr><td style=\"padding:8px 0;color:#6b7280\">Check-in:</td><td style=\"padding:8px 0;font-weight:bold;color:#1f2937\">{$d['checkIn']} at {$checkInFmt}</td></tr>
                 <tr><td style=\"padding:8px 0;color:#6b7280\">Check-out:</td><td style=\"padding:8px 0;font-weight:bold;color:#1f2937\">{$d['checkOut']} at {$checkOutFmt}</td></tr>
                 <tr><td style=\"padding:8px 0;color:#6b7280\">Guests:</td><td style=\"padding:8px 0;font-weight:bold;color:#1f2937\">{$d['guests']}</td></tr>
@@ -231,7 +232,8 @@ class EmailService
         <table style=\"width:100%;border-collapse:collapse\">
             <tr><td style=\"padding:8px 0;color:#6b7280\">Booking ID:</td><td style=\"padding:8px 0;font-weight:bold;color:#1f2937\">{$bookingId}</td></tr>
             <tr><td style=\"padding:8px 0;color:#6b7280\">Lodge:</td><td style=\"padding:8px 0;font-weight:bold;color:#1f2937\">{$lodgeName}</td></tr>
-            <tr><td style=\"padding:8px 0;color:#6b7280\">Room:</td><td style=\"padding:8px 0;font-weight:bold;color:#1f2937\">{$roomName} " . (($d['rooms'] ?? 1) > 1 ? "({$d['rooms']} Rooms)" : "") . "</td></tr>
+            <tr><td style=\"padding:8px 0;color:#6b7280\">Stay:</td><td style=\"padding:8px 0;font-weight:bold;color:#1f2937\">" . ($d['rooms'] ?? 1) . " " . (($d['rooms'] ?? 1) == 1 ? 'Room' : 'Rooms') . " | " . ($d['nights'] ?? 1) . " " . (($d['nights'] ?? 1) == 1 ? 'Night' : 'Nights') . "</td></tr>
+            <tr><td style=\"padding:8px 0;color:#6b7280\">Room Type:</td><td style=\"padding:8px 0;font-weight:bold;color:#1f2937\">{$roomName}</td></tr>
             <tr><td style=\"padding:8px 0;color:#6b7280\">Check-in:</td><td style=\"padding:8px 0;font-weight:bold;color:#1f2937\">{$d['checkIn']} at {$checkInFmt}</td></tr>
             <tr><td style=\"padding:8px 0;color:#6b7280\">Check-out:</td><td style=\"padding:8px 0;font-weight:bold;color:#1f2937\">{$d['checkOut']} at {$checkOutFmt}</td></tr>
             <tr><td style=\"padding:8px 0;color:#6b7280\">Guests:</td><td style=\"padding:8px 0;font-weight:bold;color:#1f2937\">{$d['guests']}</td></tr>

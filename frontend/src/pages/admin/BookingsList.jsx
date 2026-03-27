@@ -138,16 +138,28 @@ const BookingsList = () => {
         const id = booking._id || booking.bookingId;
         setUpdatingPayment(id);
         try {
-            await bookingAPI.updatePaymentStatus(id, {
+            const updateData = {
                 paymentStatus,
                 paymentMethod: paymentStatus === 'paid' ? 'payAtLodge' : booking.paymentMethod
-            });
-            // Update local state
+            };
+
+            // If marking as paid, ensure we set amountPaid to total and balance to 0
+            if (paymentStatus === 'paid') {
+                updateData.amountPaid = booking.totalAmount;
+                updateData.balanceAmount = 0;
+            }
+
+            const response = await bookingAPI.updatePaymentStatus(id, updateData);
+            
+            // Update local state with the returned booking data if available, else update manually
+            const updatedBooking = response.booking || { ...booking, ...updateData };
+            
             setBookings(bookings.map(b =>
-                b._id === booking._id ? { ...b, paymentStatus } : b
+                (b._id === booking._id || b.bookingId === booking.bookingId) ? { ...b, ...updatedBooking } : b
             ));
-            if (selectedBooking?._id === booking._id) {
-                setSelectedBooking({ ...selectedBooking, paymentStatus });
+            
+            if (selectedBooking?._id === booking._id || selectedBooking?.bookingId === booking.bookingId) {
+                setSelectedBooking({ ...selectedBooking, ...updatedBooking });
             }
         } catch (error) {
             console.error('Error updating payment status:', error);
@@ -287,11 +299,20 @@ const BookingsList = () => {
                                             <><Banknote size={10} /> Cash</>
                                         )}
                                     </span>
-                                    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${booking.paymentStatus === 'paid'
-                                        ? 'bg-green-100 text-green-700'
-                                        : 'bg-yellow-100 text-yellow-700'
-                                        }`}>
-                                        {booking.paymentStatus === 'paid' ? 'Payment: Paid' : 'Payment: Pending'}
+                                    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${(() => {
+                                        const hasBal = booking.balanceAmount > 0;
+                                        const isPaid = booking.paymentStatus === 'paid';
+                                        if (isPaid && !hasBal) return 'bg-green-100 text-green-700';
+                                        if (isPaid && hasBal) return 'bg-blue-100 text-blue-700';
+                                        return 'bg-yellow-100 text-yellow-700';
+                                    })()}`}>
+                                        {(() => {
+                                            const hasBal = booking.balanceAmount > 0;
+                                            const isPaid = booking.paymentStatus === 'paid';
+                                            if (isPaid && !hasBal) return 'Payment: Fully Paid';
+                                            if (isPaid && hasBal) return 'Payment: Partially Paid';
+                                            return 'Payment: Pending';
+                                        })()}
                                     </span>
 
                                 </div>
@@ -302,7 +323,14 @@ const BookingsList = () => {
                                         <span className="mx-1">→</span>
                                         <span>{booking.checkOut ? format(new Date(booking.checkOut), 'dd MMM') : 'N/A'}</span>
                                     </div>
-                                    <span className="font-bold text-gray-900">₹{booking.totalAmount?.toLocaleString() || 0}</span>
+                                    <div className="flex flex-col items-end">
+                                        <span className="font-bold text-gray-900">₹{booking.totalAmount?.toLocaleString() || 0}</span>
+                                        {booking.balanceAmount > 0 && (
+                                            <span className="text-[10px] text-red-600 font-bold bg-red-50 px-1.5 rounded-full">
+                                                Due: ₹{booking.balanceAmount.toLocaleString()}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
 
                                 <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100">
@@ -312,7 +340,7 @@ const BookingsList = () => {
                                     >
                                         <Eye size={14} /> View
                                     </button>
-                                    {booking.paymentStatus !== 'paid' && (
+                                    {booking.balanceAmount > 0 && (
                                         <button
                                             onClick={() => handlePaymentUpdate(booking, 'paid')}
                                             disabled={updatingPayment === booking._id}
@@ -321,7 +349,7 @@ const BookingsList = () => {
                                             {updatingPayment === booking._id ? (
                                                 <Loader2 size={14} className="animate-spin" />
                                             ) : (
-                                                <><Banknote size={14} /> Mark Paid</>
+                                                <><Banknote size={14} /> Clear Balance</>
                                             )}
                                         </button>
                                     )}
@@ -408,8 +436,13 @@ const BookingsList = () => {
                                                 </div>
                                             )}
                                         </td>
-                                        <td className="px-6 py-4 font-medium text-gray-900">
-                                            ₹{booking.totalAmount?.toLocaleString() || 0}
+                                        <td className="px-6 py-4">
+                                            <div className="font-medium text-gray-900">₹{booking.totalAmount?.toLocaleString() || 0}</div>
+                                            {booking.balanceAmount > 0 && (
+                                                <div className="text-[10px] text-red-600 font-bold bg-red-50 px-2 py-0.5 rounded-full w-fit mt-1">
+                                                    Due: ₹{booking.balanceAmount.toLocaleString()}
+                                                </div>
+                                            )}
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col gap-1">
@@ -425,11 +458,20 @@ const BookingsList = () => {
                                                     )}
                                                 </span>
                                                 {/* Payment Status */}
-                                                <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${booking.paymentStatus === 'paid'
-                                                    ? 'bg-green-100 text-green-700'
-                                                    : 'bg-yellow-100 text-yellow-700'
-                                                    }`}>
-                                                    {booking.paymentStatus === 'paid' ? 'Paid' : 'Pending'}
+                                                <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${(() => {
+                                                    const hasBal = booking.balanceAmount > 0;
+                                                    const isPaid = booking.paymentStatus === 'paid';
+                                                    if (isPaid && !hasBal) return 'bg-green-100 text-green-700';
+                                                    if (isPaid && hasBal) return 'bg-blue-100 text-blue-700';
+                                                    return 'bg-yellow-100 text-yellow-700';
+                                                })()}`}>
+                                                    {(() => {
+                                                        const hasBal = booking.balanceAmount > 0;
+                                                        const isPaid = booking.paymentStatus === 'paid';
+                                                        if (isPaid && !hasBal) return 'Fully Paid';
+                                                        if (isPaid && hasBal) return 'Partially Paid';
+                                                        return 'Pending';
+                                                    })()}
                                                 </span>
 
                                             </div>
@@ -449,13 +491,13 @@ const BookingsList = () => {
                                                 >
                                                     <Eye size={18} />
                                                 </button>
-                                                {/* Mark as Paid - Quick Action */}
-                                                {booking.paymentStatus !== 'paid' && (
+                                                {/* Mark as Paid / Clear Balance - Quick Action */}
+                                                {booking.balanceAmount > 0 && (
                                                     <button
                                                         onClick={() => handlePaymentUpdate(booking, 'paid')}
                                                         disabled={updatingPayment === booking._id}
                                                         className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors disabled:opacity-50"
-                                                        title="Mark as Paid (Cash Received)"
+                                                        title={booking.amountPaid > 0 ? "Clear Remaining Balance" : "Mark as Fully Paid"}
                                                     >
                                                         {updatingPayment === booking._id ? (
                                                             <Loader2 size={18} className="animate-spin" />
@@ -684,7 +726,7 @@ const BookingsList = () => {
                                 )}
 
                                 {/* Payment Action Button */}
-                                {selectedBooking.paymentStatus !== 'paid' && (
+                                {selectedBooking.balanceAmount > 0 && (
                                     <button
                                         onClick={() => handlePaymentUpdate(selectedBooking, 'paid')}
                                         disabled={updatingPayment === selectedBooking._id}
@@ -695,7 +737,7 @@ const BookingsList = () => {
                                         ) : (
                                             <Banknote size={18} />
                                         )}
-                                        Mark as Paid (Cash Received)
+                                        {selectedBooking.amountPaid > 0 ? 'Clear Remaining Balance' : 'Mark as Fully Paid'}
                                     </button>
                                 )}
                             </div>
